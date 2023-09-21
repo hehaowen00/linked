@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"linked/internal/migrations"
 	"log"
 	"net/http"
@@ -18,7 +19,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := sql.Open("sqlite3", config["DATABASE_PATH"])
+	dbPath := fmt.Sprintf("file:%s?_journal_mode=WAL", config["DATABASE_PATH"])
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return
 	}
