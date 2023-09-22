@@ -6,11 +6,6 @@ import (
 	"strings"
 )
 
-type Config struct {
-	DBPath         string `env:"DATABASE_PATH"`
-	MigrationsPath string `env:"MIGRATIONS_PATH"`
-}
-
 func LoadEnvConfig(config map[string]string) error {
 	f, err := os.Open(".env")
 	if err != nil {

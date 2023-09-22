@@ -8,3 +8,5 @@ require (
 	github.com/hehaowen00/path-router v0.0.0-20230921004814-0bcb31968e72
 	github.com/mattn/go-sqlite3 v1.14.17
 )
+
+require golang.org/x/net v0.15.0 // indirect

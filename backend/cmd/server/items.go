@@ -72,7 +72,16 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
 func createItem(db *sql.DB, item *Item) error {
 	item.ID = uuid.NewString()
 	item.CreatedAt = time.Now().UTC().UnixMilli()
-	_, err := db.Exec(createItemSql, item.ID, item.CollectionId, item.UserId, item.Title, item.URL, item.Description, item.CreatedAt)
+	_, err := db.Exec(
+		createItemSql,
+		item.ID,
+		item.CollectionId,
+		item.UserId,
+		item.Title,
+		item.URL,
+		item.Description,
+		item.CreatedAt,
+	)
 	return err
 }
 
@@ -83,7 +92,14 @@ WHERE id = ? and collection_id = ? and user_id = ? and deleted_at = 0;
 `
 
 func updateItem(db *sql.DB, item *Item) error {
-	_, err := db.Exec(updateItemSql, item.Title, item.Description, item.ID, item.CollectionId, item.UserId)
+	_, err := db.Exec(
+		updateItemSql,
+		item.Title,
+		item.Description,
+		item.ID,
+		item.CollectionId,
+		item.UserId,
+	)
 	return err
 }
 

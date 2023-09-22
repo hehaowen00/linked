@@ -8,3 +8,5 @@ github.com/hehaowen00/path-router v0.0.0-20230921004814-0bcb31968e72 h1:c6bxYI3O
 github.com/hehaowen00/path-router v0.0.0-20230921004814-0bcb31968e72/go.mod h1:4sXedHa3CudoGoOchk8UwMDU5frP/1N7vMQNA7Y9fk0=
 github.com/mattn/go-sqlite3 v1.14.17 h1:mCRHCLDUBXgpKAqIKsaAaAsrAlbkeomtRFKXh2L6YIM=
 github.com/mattn/go-sqlite3 v1.14.17/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
+golang.org/x/net v0.15.0 h1:ugBLEUaxABaB5AJqW9enI0ACdci2RUd4eP51NTBvuJ8=
+golang.org/x/net v0.15.0/go.mod h1:idbUs1IY1+zTqbi8yxTbhexhEEk5ur9LInksu6HrEpk=

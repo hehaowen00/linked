@@ -37,6 +37,7 @@ func main() {
 		g.Use(pathrouter.GzipMiddleware)
 		initCollectionsApi(db, g)
 		initItemsApi(db, g)
+		initOpenGraphApi(db, g)
 	})
 
 	log.Println("starting server at", config["ADDR"])
