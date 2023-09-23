@@ -3,6 +3,7 @@ package opengraph
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -18,7 +19,8 @@ func ParseHTML(stream io.Reader) (*Info, error) {
 	tkn := html.NewTokenizer(stream)
 	data := Info{}
 
-	headStart := false
+	inHead := false
+	inTitle := true
 	found := false
 
 	for {
@@ -29,13 +31,19 @@ func ParseHTML(stream io.Reader) (*Info, error) {
 		case html.StartTagToken, html.SelfClosingTagToken:
 			token := tkn.Token()
 			if token.Data == "head" {
-				if headStart {
+				if inHead {
 					if found {
 						return &data, nil
 					}
 					return nil, fmt.Errorf("no opengraph data found")
 				}
-				headStart = true
+				inHead = true
+				continue
+			}
+			if data.Title == "" && token.Data == "title" {
+				inTitle = true
+				found = true
+				continue
 			}
 			if token.Data == "meta" {
 				propertyName := ""
@@ -45,15 +53,19 @@ func ParseHTML(stream io.Reader) (*Info, error) {
 					if attr.Key == "property" {
 						propertyName = attr.Val
 					}
+					if attr.Key == "name" {
+						propertyName = attr.Val
+					}
 					if attr.Key == "content" {
 						propertyContent = attr.Val
 					}
 				}
 
 				switch propertyName {
+				case "description":
+					data.Description = propertyContent
 				case "og:title":
 					data.Title = propertyContent
-					found = true
 				case "og:type":
 					data.Type = propertyContent
 				case "og:description":
@@ -61,6 +73,17 @@ func ParseHTML(stream io.Reader) (*Info, error) {
 				case "og:image":
 					data.ImageURL = propertyContent
 				}
+			}
+		case html.TextToken:
+			if inTitle {
+				token := tkn.Token()
+				data.Title = strings.TrimSpace(token.Data)
+				found = true
+			}
+		case html.EndTagToken:
+			token := tkn.Token()
+			if token.Data == "title" {
+				inTitle = false
 			}
 		}
 	}
