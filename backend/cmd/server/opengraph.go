@@ -1,7 +1,7 @@
 package main
 
 import (
-	"linked/opengraph"
+	"linked/internal/opengraph"
 	"log"
 	"net/http"
 	"net/http/cookiejar"

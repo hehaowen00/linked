@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"linked/opengraph"
+	"linked/internal/opengraph"
 	"log"
 	"net/http"
 

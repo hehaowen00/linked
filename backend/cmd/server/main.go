@@ -1,8 +1,7 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
+	"linked/internal/config"
 	"linked/internal/migrations"
 	"log"
 	"net/http"
@@ -11,35 +10,43 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type Config struct {
+	Host             string `env:"HOST"`
+	AppDBPath        string `env:"APP_DATABASE"`
+	AppDBMigrations  string `env:"APP_MIGRATIONS"`
+	AuthDBPath       string `env:"AUTH_DATABASE"`
+	AuthDBMigrations string `env:"AUTH_MIGRATIONS"`
+}
+
 func main() {
-	config := make(map[string]string)
+	cfg := Config{}
 
-	err := LoadEnvConfig(config)
+	err := config.LoadEnv(&cfg)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	dbPath := fmt.Sprintf("file:%s?_journal_mode=WAL", config["DATABASE_PATH"])
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
+		log.Println(err)
 		return
 	}
 
-	err = migrations.RunMigrations(db, config["MIGRATIONS_PATH"])
+	appDB, err := openSqliteDB(cfg.AppDBPath)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	err = migrations.RunMigrations(appDB, cfg.AppDBMigrations)
 	if err != nil {
 		log.Println("error running migrations:", err)
 		return
 	}
-
 	router := pathrouter.NewRouter()
 
 	router.Group("/api", func(g *pathrouter.Group) {
 		g.Use(pathrouter.GzipMiddleware)
-		initCollectionsApi(db, g)
-		initItemsApi(db, g)
-		initOpenGraphApi(db, g)
+		initCollectionsApi(appDB, g)
+		initItemsApi(appDB, g)
+		initOpenGraphApi(appDB, g)
 	})
 
-	log.Println("starting server at", config["ADDR"])
-	http.ListenAndServe(config["ADDR"], router)
+	log.Println("starting server at", cfg.Host)
+	http.ListenAndServe(cfg.Host, router)
 }

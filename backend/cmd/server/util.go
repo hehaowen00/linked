@@ -1,7 +1,10 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/goccy/go-json"
@@ -27,4 +30,15 @@ func writeJson(w http.ResponseWriter, statusCode int, v interface{}) error {
 	w.Header().Add("Accept-Encoding", "application/json")
 	enc := json.NewEncoder(w)
 	return enc.Encode(v)
+}
+
+func openSqliteDB(path string) (*sql.DB, error) {
+	dbPath := fmt.Sprintf("file:%s?_journal_mode=WAL", path)
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return db, nil
 }
