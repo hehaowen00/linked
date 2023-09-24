@@ -48,6 +48,7 @@
 	onMount(async () => {});
 </script>
 
+<a href="http://localhost:8000/auth/logout"><p>Logout</p></a>
 <h1>Collections</h1>
 
 <input type="text" placeholder="New Collection" bind:value={name} />

@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	pathrouter "github.com/hehaowen00/path-router"
@@ -43,6 +44,7 @@ func initAuthApi(db *sql.DB, auth *GoogleAuth, router *pathrouter.Group) {
 	router.Get("/login", auth.login)
 	router.Get("/callback", auth.handleCallback)
 	router.Get("/validate", auth.ValidateToken)
+	router.Get("/logout", auth.Logout)
 }
 
 type GoogleAuth struct {
@@ -275,6 +277,16 @@ func (auth *GoogleAuth) ValidateToken(
 	writeJson(w, http.StatusOK, JsonResult{
 		Status: "ok",
 	})
+}
+
+func (auth *GoogleAuth) Logout(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	http.SetCookie(w, &http.Cookie{
+		Name:    "access_token",
+		Value:   "",
+		Expires: time.Now().UTC().Add(-time.Minute),
+		Path:    "/",
+	})
+	http.Redirect(w, r, "http://localhost:5173/", http.StatusTemporaryRedirect)
 }
 
 func validateToken(r *http.Request) error {

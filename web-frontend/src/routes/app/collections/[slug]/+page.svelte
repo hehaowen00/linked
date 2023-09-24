@@ -49,6 +49,7 @@
 </script>
 
 <a href="/app"><p>Home</p></a>
+<a href="/logout"><p>Home</p></a>
 <h1>{collection.name}</h1>
 <input type="text" placeholder="URL" bind:value={url} />
 <button on:click={addItem}>Add Item</button>
