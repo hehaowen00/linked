@@ -11,6 +11,7 @@ import (
 func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+			log.Println("get collections")
 			collections, err := getCollections(db, "")
 			if err != nil {
 				log.Println(err)
@@ -18,6 +19,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 					Status: "error",
 					Error:  "unable to get collections",
 				})
+				return
 			}
 
 			writeJson(w, http.StatusOK, JsonResult{
@@ -109,6 +111,8 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Delete("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+			log.Println("delete collections")
+
 			c := Collection{
 				Id: ps.Get("collection"),
 			}

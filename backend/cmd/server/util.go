@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"io"
@@ -41,4 +42,8 @@ func openSqliteDB(path string) (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+
+func setContext(ctx context.Context, key any, value any) context.Context {
+	return context.WithValue(ctx, key, value)
 }
