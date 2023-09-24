@@ -52,9 +52,8 @@ func newGoogleAuth(host, clientId, clientSecret string, db *sql.DB) *GoogleAuth 
 func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 		accessToken, err := r.Cookie("access_token")
-		log.Println("access token", accessToken)
 		if err != nil {
-			log.Println("no access token", err, accessToken)
+			log.Println("no access token", err)
 			writeJson(w, http.StatusUnauthorized, JsonResult{
 				Status: "error",
 				Error:  "missing access token",
@@ -113,7 +112,6 @@ func (auth *GoogleAuth) handleCallback(
 	stateValue := r.FormValue("state")
 	codeValue := r.FormValue("code")
 
-	log.Println("stateValue", stateValue)
 	if !strings.HasPrefix(stateValue, auth.csrf) {
 		log.Println("oauth2 flow - CSRF failed")
 		writeJson(w, http.StatusUnauthorized, JsonResult{
@@ -162,8 +160,6 @@ func (auth *GoogleAuth) handleCallback(
 		})
 		return
 	}
-
-	// fmt.Println(string(contents))
 
 	// http.SetCookie(w, &http.Cookie{
 	// 	Name:  "refresh_token",
@@ -291,7 +287,7 @@ func (auth *GoogleAuth) getProfile(w http.ResponseWriter, r *http.Request, ps *p
 func getUserInfo(r *http.Request) (*UserInfo, error) {
 	accessToken, err := r.Cookie("access_token")
 	if err != nil {
-		log.Println("no access token", err, accessToken)
+		log.Println("no access token", err)
 		return nil, err
 	}
 	response, err := http.Get(

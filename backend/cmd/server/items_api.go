@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -13,11 +12,8 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections/:collection/items",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			items, err := getItems(db, ps.Get("collection"), userId)
-			fmt.Println("items", items)
-
 			if err != nil {
 				log.Println(err)
 				writeJson(w, http.StatusInternalServerError, JsonResult{
@@ -33,7 +29,6 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections/:collection/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			item := Item{
 				ID:           ps.Get("item"),
@@ -60,7 +55,6 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Post("/collections/:collection/items",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			item := Item{
 				CollectionId: ps.Get("collection"),
@@ -95,7 +89,6 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Put("/collections/:collection/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			item := Item{
 				ID:           ps.Get("item"),
@@ -131,7 +124,6 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Delete("/collections/:collection/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			item := Item{
 				ID:           ps.Get("item"),

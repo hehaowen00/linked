@@ -1,18 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"linked/internal/config"
 	"linked/internal/migrations"
 	"log"
+	"mime"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	pathrouter "github.com/hehaowen00/path-router"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type Config struct {
-	Host string `env:"HOST"`
+	Host      string `env:"HOST"`
+	StaticDir string `env:"STATIC_DIR"`
 
 	AppDBPath       string `env:"APP_DATABASE"`
 	AppDBMigrations string `env:"APP_MIGRATIONS"`
@@ -65,6 +69,41 @@ func main() {
 
 	router := pathrouter.NewRouter()
 
+	router.Use(func(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+			log.Println(r.Method, r.URL.Path)
+			next(w, r, ps)
+		}
+	})
+
+	router.Get("/*", func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+		path := ps.Get("*")
+
+		if strings.Contains(path, "..") {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+
+		if len(path) == 0 {
+			path = "index.html"
+		}
+
+		bytes, err := os.ReadFile(cfg.StaticDir + path)
+		// SPA specific
+		if err != nil {
+			bytes, err = os.ReadFile(cfg.StaticDir + "index.html")
+		}
+
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+
+		contentType := mime.TypeByExtension(filepath.Ext(path))
+		w.Header().Add("Content-Type", contentType)
+		w.Write(bytes)
+	})
+
 	router.Group("/auth", func(g *pathrouter.Group) {
 		g.Use(Cors)
 		initAuthApi(authDB, googleAuth, g)
@@ -81,7 +120,6 @@ func main() {
 		http.MethodOptions,
 		"*",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("origin", r.Header.Get("Access-Control-Allow-Origin"))
 			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
@@ -94,7 +132,6 @@ func main() {
 
 func Cors(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-		fmt.Println("origin", r.Header.Get("Access-Control-Allow-Origin"))
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		next(w, r, ps)

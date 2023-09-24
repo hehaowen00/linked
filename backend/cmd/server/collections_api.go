@@ -11,10 +11,7 @@ import (
 func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			log.Println("get collections")
-
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			collections, err := getCollections(db, userId)
 			if err != nil {
@@ -35,7 +32,6 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			c := Collection{
 				Id:     ps.Get("collection"),
@@ -61,7 +57,6 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Post("/collections",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			c := Collection{
 				UserId: userId,
