@@ -1,54 +1,37 @@
 <script>
 	import { onMount } from "svelte";
+	import { getCollections, deleteCollection, postCollection, logoutUrl } from "../../api.js";
 
 	export let data;
 	let name = "";
 	let collections = data.collections;
 
-	async function fetchCollections() {
-		let res = await fetch("http://localhost:8000/api/collections", {
-			credentials: "include"
-		});
-		let json = await res.json();
-		collections = json.data;
-	}
-
 	async function newCollection() {
-		let res = await fetch("http://localhost:8000/api/collections", {
-			method: "POST",
-			credentials: "include",
-			body: JSON.stringify({
-				name: name
-			})
-		});
+		let res = await postCollection(window.fetch, name);
 		if (!res.ok) {
 			return;
 		}
+
+		res = await getCollections(window.fetch);
+		let json = await res.json();
+		collections = json.data;
 		name = "";
-		await fetchCollections();
 	}
 
-	async function deleteCollection(index) {
+	async function removeCollection(index) {
 		let c = collections[index];
-		let res = await fetch(`http://localhost:8000/api/collections/${c.id}`, {
-			method: "DELETE",
-			credentials: "include",
-			body: JSON.stringify({
-				name: c.name
-			})
-		});
+		let res = await deleteCollection(window.fetch, c);
 		if (!res.ok) {
 			if (res.status === 401) {
 			}
 			return;
 		}
-		await fetchCollections();
 	}
 
 	onMount(async () => {});
 </script>
 
-<a href="http://localhost:8000/auth/logout"><p>Logout</p></a>
+<a href={logoutUrl()}><p>Logout</p></a>
 <h1>Collections</h1>
 
 <input type="text" placeholder="New Collection" bind:value={name} />
@@ -59,7 +42,7 @@
 		<p>
 			<a href="/app/collections/{collection.id}">{collection.name}</a>
 			{collection.deleted_at}
-			<button on:click={() => deleteCollection(idx)}>Delete</button>
+			<button on:click={() => removeCollection(idx)}>Delete</button>
 		</p>
 	{/if}
 {/each}

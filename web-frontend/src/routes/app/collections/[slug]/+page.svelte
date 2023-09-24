@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from "svelte";
+	import { getItems, getOpenGraphInfo, postItem } from "../../../../api.js";
 
 	export let data;
 	let collection = data.collection ?? {};
@@ -27,37 +28,24 @@
 			return;
 		}
 
-		let res = await fetch("http://localhost:8000/api/opengraph/info", {
-			method: "POST",
-			credentials: "include",
-			body: JSON.stringify({
-				url: url
-			})
-		});
-
+		let res = await getOpenGraphInfo(window.fetch, url);
 		og = await res.json();
 	}
 
 	$: url && fetchOpenGraph(url);
 
 	async function addItem() {
-		let res = await fetch(`http://localhost:8000/api/collections/${data.slug}/items`, {
-			method: "POST",
-			credentials: "include",
-			body: JSON.stringify({
-				url: url,
-				title: og.title,
-				description: og.description
-			})
+		let res = await postItem(window.fetch, collection.id, {
+			url,
+			title: og.title,
+			description: og.description
 		});
 		let resp = await res.json();
-		items.push(resp.data);
+		items = [...items, resp.data];
 	}
 
 	onMount(async () => {
-		let res = await fetch("http://localhost:8000/api/collections/" + collection.id + "/items", {
-			credentials: "include"
-		});
+		let res = await getItems(window.fetch, collection.id);
 		let resp = await res.json();
 		if (resp.data) {
 			items = resp.data;

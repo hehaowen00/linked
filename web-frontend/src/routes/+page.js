@@ -1,15 +1,16 @@
 import { redirect } from "@sveltejs/kit";
+import { validateUser } from "../api";
 
 export const ssr = false;
+export const prerender = true;
 
 export async function load({ fetch }) {
 	let res;
 	try {
-		res = await fetch("http://localhost:8000/auth/validate", {
-			credentials: "include"
-		});
-	} catch (e) {}
-	console.log(res);
+		res = await validateUser(fetch);
+	} catch (e) {
+		return;
+	}
 	if (res.ok) {
 		throw redirect(302, "/app");
 	}

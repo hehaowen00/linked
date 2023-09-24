@@ -1,21 +1,16 @@
+export const ssr = false;
+export const prerender = false;
+
+import { getCollectionById, getItems } from "../../../../api";
+
 export async function load({ fetch, params }) {
-	let collection = {};
 	let slug = params.slug;
 
-	let res = await fetch(`http://localhost:8000/api/collections/${slug}`, {
-		credentials: "include"
-	});
-
-	if (!res.ok) {
-	}
-
+	let res = await getCollectionById(fetch, slug);
 	let resp = await res.json();
-	collection = resp.data;
+	let collection = resp.data;
 
-	res = await fetch(`http://localhost:8000/api/collections/${slug}/items`, {
-		credentials: "include"
-	});
-
+	res = await getItems(fetch, slug);
 	let items = await res.json();
 
 	return {

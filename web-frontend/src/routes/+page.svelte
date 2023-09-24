@@ -1,6 +1,5 @@
 <script>
+	import { loginUrl } from "../api.js";
 </script>
 
-<a href="http://localhost:8000/auth/login?redirect_url=http://localhost:5173">
-	Sign In With Google
-</a>
+<a href={loginUrl(window.location)}> Sign In With Google </a>
