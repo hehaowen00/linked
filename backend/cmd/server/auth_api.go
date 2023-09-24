@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -17,34 +16,12 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-type TokenInfo struct {
-	Audience      string `json:"aud"`
-	Subject       string `json:"sub"`
-	Email         string `json:"email"`
-	EmailVerified string `json:"email_verified"`
-}
-
-type UserInfo struct {
-	Id            string `json:"id"`
-	Email         string `json:"email"`
-	VerifiedEmail string `json:"verified_email"`
-	Name          string `json:"name"`
-	GivenName     string `json:"given_name"`
-	FamilyName    string `json:"family_name"`
-	Picture       string `json:"picture"`
-	Locale        string `json:"locale"`
-}
-
-type StateInfo struct {
-	CSRFToken   string `csv:"csrf"`
-	RedirectUrl string `csv:"redirect_url"`
-}
-
 func initAuthApi(db *sql.DB, auth *GoogleAuth, router *pathrouter.Group) {
 	router.Get("/login", auth.login)
 	router.Get("/callback", auth.handleCallback)
 	router.Get("/validate", auth.ValidateToken)
-	router.Get("/logout", auth.Logout)
+	router.Get("/logout", auth.logout)
+	router.Get("/profile", auth.getProfile)
 }
 
 type GoogleAuth struct {
@@ -75,6 +52,7 @@ func newGoogleAuth(host, clientId, clientSecret string, db *sql.DB) *GoogleAuth 
 func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 		accessToken, err := r.Cookie("access_token")
+		log.Println("access token", accessToken)
 		if err != nil {
 			log.Println("no access token", err, accessToken)
 			writeJson(w, http.StatusUnauthorized, JsonResult{
@@ -98,8 +76,6 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 			return
 		}
 
-		fmt.Println(string(contents))
-
 		info := TokenInfo{}
 
 		err = json.Unmarshal(contents, &info)
@@ -113,7 +89,7 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 		}
 
 		c := setContext(r.Context(), "id", info.Subject)
-		r.WithContext(c)
+		r = r.WithContext(c)
 		next(w, r, ps)
 	}
 }
@@ -172,7 +148,22 @@ func (auth *GoogleAuth) handleCallback(
 		return
 	}
 
-	fmt.Println(string(contents))
+	tokenInfo := &TokenInfo{}
+	err = json.Unmarshal(contents, &tokenInfo)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	if tokenInfo.Audience != auth.config.ClientID {
+		writeJson(w, http.StatusUnauthorized, JsonResult{
+			Status: "error",
+			Error:  "unauthorized",
+		})
+		return
+	}
+
+	// fmt.Println(string(contents))
 
 	// http.SetCookie(w, &http.Cookie{
 	// 	Name:  "refresh_token",
@@ -279,42 +270,50 @@ func (auth *GoogleAuth) ValidateToken(
 	})
 }
 
-func (auth *GoogleAuth) Logout(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+func (auth *GoogleAuth) logout(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 	http.SetCookie(w, &http.Cookie{
 		Name:    "access_token",
 		Value:   "",
 		Expires: time.Now().UTC().Add(-time.Minute),
 		Path:    "/",
 	})
-	http.Redirect(w, r, "http://localhost:5173/", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 }
 
-func validateToken(r *http.Request) error {
+func (auth *GoogleAuth) getProfile(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	info, err := getUserInfo(r)
+	if err != nil {
+	}
+
+	writeJson(w, http.StatusOK, info)
+}
+
+func getUserInfo(r *http.Request) (*UserInfo, error) {
 	accessToken, err := r.Cookie("access_token")
 	if err != nil {
 		log.Println("no access token", err, accessToken)
-		return err
+		return nil, err
 	}
 	response, err := http.Get(
 		"https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + accessToken.Value,
 	)
 	if err != nil {
 		log.Println(err)
-		return err
+		return nil, err
 	}
 	defer response.Body.Close()
 
 	contents, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Println(err)
-		return err
+		return nil, err
 	}
 
 	userInfo := UserInfo{}
 	err = json.Unmarshal(contents, &userInfo)
 	if err != nil {
 		log.Println(err)
-		return err
+		return nil, err
 	}
-	return nil
+	return &userInfo, nil
 }

@@ -1,22 +1,22 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount } from "svelte";
 
 	export let data;
-	let name = '';
+	let name = "";
 	let collections = data.collections;
 
 	async function fetchCollections() {
-		let res = await fetch('http://localhost:8000/api/collections', {
-			credentials: 'include'
+		let res = await fetch("http://localhost:8000/api/collections", {
+			credentials: "include"
 		});
 		let json = await res.json();
 		collections = json.data;
 	}
 
 	async function newCollection() {
-		let res = await fetch('http://localhost:8000/api/collections', {
-			method: 'POST',
-			credentials: 'include',
+		let res = await fetch("http://localhost:8000/api/collections", {
+			method: "POST",
+			credentials: "include",
 			body: JSON.stringify({
 				name: name
 			})
@@ -24,15 +24,15 @@
 		if (!res.ok) {
 			return;
 		}
-		name = '';
+		name = "";
 		await fetchCollections();
 	}
 
 	async function deleteCollection(index) {
 		let c = collections[index];
 		let res = await fetch(`http://localhost:8000/api/collections/${c.id}`, {
-			method: 'DELETE',
-			credentials: 'include',
+			method: "DELETE",
+			credentials: "include",
 			body: JSON.stringify({
 				name: c.name
 			})

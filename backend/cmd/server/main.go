@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"linked/internal/config"
 	"linked/internal/migrations"
 	"log"
@@ -80,6 +81,7 @@ func main() {
 		http.MethodOptions,
 		"*",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println("origin", r.Header.Get("Access-Control-Allow-Origin"))
 			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
@@ -92,6 +94,7 @@ func main() {
 
 func Cors(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+		fmt.Println("origin", r.Header.Get("Access-Control-Allow-Origin"))
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		next(w, r, ps)
