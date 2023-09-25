@@ -21,7 +21,8 @@ type Item struct {
 const getItemsSql = `
 SELECT id, url, title, description, created_at
 FROM items
-WHERE collection_id = ? and user_id = ? and deleted_at = 0;
+WHERE collection_id = ? and user_id = ? and deleted_at = 0
+ORDER BY created_at;
 `
 
 func getItems(db *sql.DB, collectionId, userId string) ([]*Item, error) {

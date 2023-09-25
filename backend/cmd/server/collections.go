@@ -18,7 +18,8 @@ type Collection struct {
 const getCollectionsSql = `
 SELECT id, name, created_at, deleted_at
 FROM collections
-WHERE user_id = ?;
+WHERE user_id = ?
+ORDER BY created_at;
 `
 
 func getCollections(db *sql.DB, userId string) ([]*Collection, error) {
