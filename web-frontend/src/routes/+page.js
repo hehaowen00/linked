@@ -4,14 +4,21 @@ import { validateUser } from "../api";
 export const ssr = false;
 export const prerender = true;
 
-export async function load({ fetch }) {
+export async function load({ fetch, url }) {
 	let res;
 	try {
-		res = await validateUser(fetch);
+		res = await validateUser(fetch, url.origin);
 	} catch (e) {
-		return;
+		return {
+			url
+		};
 	}
+
 	if (res.ok) {
 		throw redirect(302, "/app");
 	}
+
+	return {
+		url
+	};
 }

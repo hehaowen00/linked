@@ -5,10 +5,10 @@ export const prerender = true;
 
 export async function load({ fetch, url }) {
 	try {
-		let res = await validateUser(fetch);
+		let res = await validateUser(fetch, url.origin);
 		if (res.ok) {
 			return;
 		}
 	} catch (e) {}
-	throw redirect(302, loginUrl(url.href));
+	throw redirect(302, loginUrl(url.origin));
 }

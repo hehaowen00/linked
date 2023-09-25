@@ -1,0 +1,51 @@
+body {
+}
+
+a,
+a:visited,
+a:hover {
+	color: blue;
+	text-decoration: none;
+}
+
+button {
+}
+
+input {
+	flex: 1;
+}
+
+.row {
+}
+
+select {
+	width: 100%;
+}
+
+.main {
+	margin: 0 auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+	max-width: 1200px;
+}
+
+.right {
+	float: right;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	margin-bottom: 0.5rem;
+	margin-top: 0.5rem;
+}
+
+.flex {
+	display: flex;
+}
+
+.flex-row {
+	flex-direction: row;
+}
+
+.flex-col {
+	flex-direction: column;
+}

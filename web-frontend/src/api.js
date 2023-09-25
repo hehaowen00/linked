@@ -1,23 +1,19 @@
-import { PUBLIC_API_HOST } from "$env/static/public";
-
-const API_HOST = PUBLIC_API_HOST;
-
-export async function getCollectionById(fetch, id) {
-	let res = await fetch(`http://${API_HOST}/api/collections/${id}`, {
+export async function getCollectionById(fetch, host, id) {
+	let res = await fetch(`${host}/api/collections/${id}`, {
 		credentials: "include"
 	});
 	return res;
 }
 
-export async function getCollections(fetch) {
-	let res = await fetch(`http://${API_HOST}/api/collections`, {
+export async function getCollections(fetch, host) {
+	let res = await fetch(`${host}/api/collections`, {
 		credentials: "include"
 	});
 	return res;
 }
 
-export async function postCollection(fetch, name) {
-	let res = await fetch(`http://${API_HOST}/api/collections`, {
+export async function postCollection(fetch, host, name) {
+	let res = await fetch(`${host}/api/collections`, {
 		method: "POST",
 		credentials: "include",
 		body: JSON.stringify({
@@ -27,8 +23,8 @@ export async function postCollection(fetch, name) {
 	return res;
 }
 
-export async function deleteCollection(fetch, collection) {
-	let res = await fetch(`http://${API_HOST}/api/collections/${collection.id}`, {
+export async function deleteCollection(fetch, host, collection) {
+	let res = await fetch(`${host}/api/collections/${collection.id}`, {
 		method: "DELETE",
 		credentials: "include",
 		body: JSON.stringify({
@@ -38,15 +34,15 @@ export async function deleteCollection(fetch, collection) {
 	return res;
 }
 
-export async function getItems(fetch, id) {
-	let res = await fetch(`http://${API_HOST}/api/collections/${id}/items`, {
+export async function getItems(fetch, host, id) {
+	let res = await fetch(`${host}/api/collections/${id}/items`, {
 		credentials: "include"
 	});
 	return res;
 }
 
-export async function postItem(fetch, collectionId, payload) {
-	let res = await fetch(`http://${API_HOST}/api/collections/${collectionId}/items`, {
+export async function postItem(fetch, host, collectionId, payload) {
+	let res = await fetch(`${host}/api/collections/${collectionId}/items`, {
 		method: "POST",
 		credentials: "include",
 		body: JSON.stringify(payload)
@@ -54,8 +50,8 @@ export async function postItem(fetch, collectionId, payload) {
 	return res;
 }
 
-export async function getOpenGraphInfo(fetch, url) {
-	let res = await fetch(`http://${API_HOST}/api/opengraph/info`, {
+export async function getOpenGraphInfo(fetch, host, url) {
+	let res = await fetch(`${host}/api/opengraph/info`, {
 		method: "POST",
 		credentials: "include",
 		body: JSON.stringify({
@@ -65,17 +61,17 @@ export async function getOpenGraphInfo(fetch, url) {
 	return res;
 }
 
-export async function validateUser(fetch) {
-	let res = await fetch(`http://${API_HOST}/auth/validate`, {
+export async function validateUser(fetch, host) {
+	let res = await fetch(`${host}/auth/validate`, {
 		credentials: "include"
 	});
 	return res;
 }
 
-export function loginUrl(redirect) {
-	return `http://${API_HOST}/auth/login?redirect_url=${redirect}`;
+export function loginUrl(host, redirect) {
+	return `${host}/auth/login?redirect_url=${redirect}`;
 }
 
-export function logoutUrl() {
-	return `http://${API_HOST}/auth/logout`;
+export function logoutUrl(host) {
+	return `${host}/auth/logout`;
 }

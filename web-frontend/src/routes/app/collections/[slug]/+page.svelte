@@ -1,6 +1,7 @@
 <script>
-	import { onMount } from "svelte";
-	import { getItems, getOpenGraphInfo, postItem } from "../../../../api.js";
+	import { getOpenGraphInfo, postItem } from "../../../../api.js";
+	import Header from "../../../../components/header.svelte";
+	import { checkValidUrl, displayTimestamp } from "../../../../util.js";
 
 	export let data;
 	let collection = data.collection ?? {};
@@ -8,9 +9,10 @@
 	let url = "";
 	let og = {
 		title: "",
-		description: "",
+		desc: "",
 		image_url: ""
 	};
+	let disabledAdd = false;
 
 	async function pasteUrl() {
 		let resp = await navigator.clipboard.readText();
@@ -18,65 +20,76 @@
 	}
 
 	async function fetchOpenGraph(url) {
-		if (!url || (!url.startsWith("http://") && !url.startsWith("https://"))) {
+		if (!checkValidUrl(url)) {
 			console.log("invalid url");
 			og = {
 				title: "",
-				description: "",
+				desc: "",
 				image_url: ""
 			};
 			return;
 		}
 
-		let res = await getOpenGraphInfo(window.fetch, url);
+		disabledAdd = true;
+		let res = await getOpenGraphInfo(window.fetch, data.url.origin, url);
 		og = await res.json();
+		disabledAdd = false;
 	}
 
 	$: url && fetchOpenGraph(url);
 
 	async function addItem() {
-		let res = await postItem(window.fetch, collection.id, {
+		if (!checkValidUrl(url) || og.title == "") {
+			return;
+		}
+		let res = await postItem(window.fetch, data.url.origin, collection.id, {
 			url,
 			title: og.title,
-			description: og.description
+			desc: og.description
 		});
 		let resp = await res.json();
 		items = [...items, resp.data];
+		url = "";
+		og = {
+			title: "",
+			desc: "",
+			image_url: ""
+		};
 	}
-
-	onMount(async () => {
-		let res = await getItems(window.fetch, collection.id);
-		let resp = await res.json();
-		if (resp.data) {
-			items = resp.data;
-		}
-	});
 </script>
 
-<a href="/app"><p>Home</p></a>
+<Header url={data.url.origin} />
 <h1>{collection.name}</h1>
-<input type="text" placeholder="URL" bind:value={url} />
-<button on:click={pasteUrl}>Paste URL</button>
-<button on:click={addItem}>Add Item</button>
+<div class="flex flex-row">
+	<input type="text" placeholder="URL" bind:value={url} />
+</div>
+<p />
+<div class="flex flex-row">
+	<button on:click={pasteUrl}>Paste URL</button>
+</div>
+<p />
+<div class="flex flex-row">
+	<button on:click={addItem} disabled={disabledAdd}>Add Item</button>
+</div>
 <a href={url}>
 	<p>{url}</p>
 </a>
-<p>
+<div class="flex flex-row">
 	<input type="text" placeholder="Title" bind:value={og.title} />
-</p>
-<p>
+</div>
+<p />
+<div class="flex flex-row">
 	<input type="text" placeholder="Description" bind:value={og.description} />
-</p>
-
+</div>
 {#each items as item, i}
 	<p>
 		<a href={item.url}>
 			{item.title}
 		</a>
 	</p>
-	{#if item.description}
-		<p>{item.description}</p>
+	{#if item.desc}
+		<p>{item.desc}</p>
 	{/if}
-	<p>Added {new Date(item.created_at).toString()}</p>
+	<p>Added {displayTimestamp(item.created_at)}</p>
 	<button>Delete</button>
 {/each}
