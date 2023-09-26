@@ -69,6 +69,10 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 			return
 		}
 
+		if response.StatusCode != 200 {
+			return
+		}
+
 		contents, err := io.ReadAll(response.Body)
 		if err != nil {
 			log.Println(err)
@@ -240,20 +244,33 @@ func (auth *GoogleAuth) ValidateToken(
 	)
 	if err != nil {
 		log.Println(err)
+		writeJson(w, http.StatusInternalServerError, JsonResult{
+			Status: "error",
+		})
+		return
 	}
 
 	contents, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Println(err)
+		writeJson(w, http.StatusInternalServerError, JsonResult{
+			Status: "error",
+		})
 		return
 	}
 
 	tokenInfo := TokenInfo{}
 	err = json.Unmarshal(contents, &tokenInfo)
 	if err != nil {
+		log.Println(err)
+		writeJson(w, http.StatusInternalServerError, JsonResult{
+			Status: "error",
+		})
+		return
 	}
 
 	if tokenInfo.Audience != auth.config.ClientID {
+		log.Println("audience does not match client id")
 		writeJson(w, http.StatusUnauthorized, JsonResult{
 			Status: "error",
 			Error:  "unauthorized",

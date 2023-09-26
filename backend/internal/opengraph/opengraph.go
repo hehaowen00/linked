@@ -62,8 +62,8 @@ func ParseHTML(stream io.Reader) (*Info, error) {
 				}
 
 				switch propertyName {
-				case "description":
-					data.Description = propertyContent
+				// case "description":
+				// 	data.Description = propertyContent
 				case "og:title":
 					data.Title = propertyContent
 				case "og:type":

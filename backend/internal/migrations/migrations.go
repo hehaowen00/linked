@@ -55,11 +55,18 @@ func executeMigration(db *sql.DB, filepath string) error {
 		return err
 	}
 
-	_, err = db.Exec(string(bytes))
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(string(bytes))
 	if err != nil {
 		return err
 	}
 
+	err = tx.Commit()
 	return err
 }
 

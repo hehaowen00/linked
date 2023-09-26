@@ -89,7 +89,6 @@ func main() {
 		}
 
 		bytes, err := os.ReadFile(cfg.StaticDir + path)
-		// SPA specific
 		if err != nil {
 			bytes, err = os.ReadFile(cfg.StaticDir + "index.html")
 		}
@@ -127,7 +126,7 @@ func main() {
 	)
 
 	log.Println("starting server at", cfg.Host)
-	http.ListenAndServe(cfg.Host, router)
+	log.Fatalln(http.ListenAndServe(cfg.Host, router))
 }
 
 func Cors(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {

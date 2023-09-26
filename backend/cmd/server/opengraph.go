@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/cookiejar"
+	"strings"
 	"time"
 )
 
@@ -42,22 +43,34 @@ func (ogw *openGraphWorker) Run() {
 		case <-ogw.stop:
 			break
 		case req := <-ogw.incoming:
+			if strings.Contains(req.url, "localhost") {
+				req.recv <- nil
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
 			resp, err := ogw.httpClient.Get(req.url)
 			if err != nil {
 				log.Println("error getting webpage", err)
 				req.recv <- nil
+				time.Sleep(1 * time.Second)
 				continue
+			}
+
+			if resp.StatusCode != 200 {
+				req.recv <- nil
+				time.Sleep(1 * time.Second)
+				return
 			}
 
 			data, err := opengraph.ParseHTML(resp.Body)
 			if err != nil {
 				log.Println(err)
 				req.recv <- nil
+				time.Sleep(1 * time.Second)
 				continue
 			}
 			req.recv <- data
-
-			time.Sleep(1 * time.Second)
 		}
 	}
 }

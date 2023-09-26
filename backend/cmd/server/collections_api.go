@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	pathrouter "github.com/hehaowen00/path-router"
 )
 
@@ -59,7 +60,16 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 			userId := r.Context().Value("id").(string)
 
 			c := Collection{
+				Id:     uuid.NewString(),
 				UserId: userId,
+			}
+
+			if err := c.isValid(); err != nil {
+				writeJson(w, http.StatusBadRequest, JsonResult{
+					Status: "error",
+					Error:  err.Error(),
+				})
+				return
 			}
 
 			err := readJson(r.Body, &c)
@@ -91,7 +101,6 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Put("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			c := Collection{
 				UserId: userId,
@@ -100,6 +109,14 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 			err := readJson(r.Body, &c)
 			if err != nil {
 				log.Println(err)
+				writeJson(w, http.StatusBadRequest, JsonResult{
+					Status: "error",
+					Error:  err.Error(),
+				})
+				return
+			}
+
+			if err := c.isValid(); err != nil {
 				writeJson(w, http.StatusBadRequest, JsonResult{
 					Status: "error",
 					Error:  err.Error(),
@@ -124,10 +141,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Delete("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			log.Println("delete collections")
-
 			userId := r.Context().Value("id").(string)
-			log.Println("user id", userId)
 
 			c := Collection{
 				Id:     ps.Get("collection"),
@@ -137,6 +151,14 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 			err := readJson(r.Body, &c)
 			if err != nil {
 				log.Println(err)
+				writeJson(w, http.StatusBadRequest, JsonResult{
+					Status: "error",
+					Error:  err.Error(),
+				})
+				return
+			}
+
+			if err := c.isValid(); err != nil {
 				writeJson(w, http.StatusBadRequest, JsonResult{
 					Status: "error",
 					Error:  err.Error(),
