@@ -1,5 +1,5 @@
 <script>
-	import { getCollections, deleteCollection, postCollection } from "../../api.js";
+	import { getCollections, putCollection, postCollection } from "../../api.js";
 	import Collection from "../../components/collection.svelte";
 	import Header from "../../components/header.svelte";
 
@@ -15,23 +15,31 @@
 
 		let res = await postCollection(window.fetch, url.origin, name);
 		if (!res.ok) {
+			console.log(await res.json());
 			return;
 		}
 
-		res = await getCollections(window.fetch, url.origin);
-		let json = await res.json();
-		collections = json.data;
+		await refresh();
 		name = "";
 	}
 
-	async function removeCollection(index) {
-		let c = collections[index];
-		let res = await deleteCollection(window.fetch, url.origin, c);
+	async function update(method, collection) {
+		let res = await putCollection(window.fetch, url.origin, method, collection);
 		if (!res.ok) {
-			if (res.status === 401) {
-			}
+			console.log(await res.json());
 			return;
 		}
+		await refresh();
+	}
+
+	async function refresh() {
+		let res = await getCollections(window.fetch, url.origin);
+		let json = await res.json();
+		if (!res.ok) {
+			console.log(await res.json())
+			return;
+		}
+		collections = json.data;
 	}
 </script>
 
@@ -51,28 +59,20 @@
 <div class="row">
 	<select bind:value={category}>
 		<option value="all" selected>All</option>
-		<option value="active">Active</option>
-		<option value="deleted">Deleted</option>
+		<option value="deleted">Archived</option>
 	</select>
 </div>
 
 {#if category == "all"}
 	{#each collections as collection, idx}
-		<Collection {collection} removeFn={() => removeCollection(idx)} />
-	{/each}
-{:else if category == "active"}
-	{#each collections as collection, idx}
 		{#if collection.deleted_at == 0}
-			<Collection {collection} removeFn={() => removeCollection(idx)} />
+			<Collection bind:collection={collections[idx]} {update} />
 		{/if}
 	{/each}
 {:else}
 	{#each collections as collection, idx}
 		{#if collection.deleted_at != 0}
-			<Collection {collection} removeFn={() => removeCollection(idx)} />
+			<Collection bind:collection={collections[idx]} {update} />
 		{/if}
 	{/each}
 {/if}
-
-<style>
-</style>

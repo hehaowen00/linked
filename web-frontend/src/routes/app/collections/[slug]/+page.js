@@ -1,9 +1,17 @@
 export const ssr = false;
 export const prerender = false;
 
-import { getCollectionById, getItems } from "../../../../api";
+import { redirect } from "@sveltejs/kit";
+import { getCollectionById, getItems, loginUrl } from "../../../../api";
 
 export async function load({ fetch, url, params }) {
+	try {
+		let res = await validateUser(fetch, url.origin);
+		if (!res.ok) {
+			throw redirect(302, loginUrl(url.origin, url.href));
+		}
+	} catch (e) {}
+
 	let slug = params.slug;
 
 	let res = await getCollectionById(fetch, url.origin, slug);

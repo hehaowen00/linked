@@ -23,13 +23,11 @@ export async function postCollection(fetch, host, name) {
 	return res;
 }
 
-export async function deleteCollection(fetch, host, collection) {
+export async function putCollection(fetch, host, method, collection) {
 	let res = await fetch(`${host}/api/collections/${collection.id}`, {
-		method: "DELETE",
+		method,
 		credentials: "include",
-		body: JSON.stringify({
-			name: collection.name
-		})
+		body: JSON.stringify(collection)
 	});
 	return res;
 }
@@ -51,14 +49,16 @@ export async function postItem(fetch, host, collectionId, payload) {
 }
 
 export async function getOpenGraphInfo(fetch, host, url) {
-	let res = await fetch(`${host}/api/opengraph/info`, {
-		method: "POST",
-		credentials: "include",
-		body: JSON.stringify({
-			url
-		})
-	});
-	return res;
+	try {
+		let res = await fetch(`${host}/api/opengraph/info`, {
+			method: "POST",
+			credentials: "include",
+			body: JSON.stringify({
+				url
+			})
+		});
+		return res;
+	} catch (e) {}
 }
 
 export async function validateUser(fetch, host) {

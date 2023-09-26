@@ -1,8 +1,6 @@
 <script>
 	import { logoutUrl } from "../api";
-
 	export let url;
-	console.log("header", url);
 </script>
 
 <div class="row">

@@ -1,6 +1,6 @@
 <script>
-	import { getOpenGraphInfo, postItem } from "../../../../api.js";
 	import Header from "../../../../components/header.svelte";
+	import { getOpenGraphInfo, postItem } from "../../../../api.js";
 	import { checkValidUrl, displayTimestamp } from "../../../../util.js";
 
 	export let data;
@@ -12,7 +12,6 @@
 		desc: "",
 		image_url: ""
 	};
-	let disabledAdd = false;
 
 	async function pasteUrl() {
 		let resp = await navigator.clipboard.readText();
@@ -20,8 +19,8 @@
 	}
 
 	async function fetchOpenGraph(url) {
+		disableAddButton = false;
 		if (!checkValidUrl(url)) {
-			console.log("invalid url");
 			og = {
 				title: "",
 				desc: "",
@@ -30,10 +29,16 @@
 			return;
 		}
 
-		disabledAdd = true;
-		let res = await getOpenGraphInfo(window.fetch, data.url.origin, url);
-		og = await res.json();
-		disabledAdd = false;
+		try {
+			let res = await getOpenGraphInfo(window.fetch, data.url.origin, url);
+			if (res.ok) {
+				og = await res.json();
+			} else {
+				console.log("error", await res.json());
+			}
+		} catch (e) {
+			console.log(e);
+		}
 	}
 
 	$: url && fetchOpenGraph(url);
@@ -45,7 +50,7 @@
 		let res = await postItem(window.fetch, data.url.origin, collection.id, {
 			url,
 			title: og.title,
-			desc: og.description
+			desc: og.desc
 		});
 		let resp = await res.json();
 		items = [...items, resp.data];
@@ -69,27 +74,34 @@
 </div>
 <p />
 <div class="flex flex-row">
-	<button on:click={addItem} disabled={disabledAdd}>Add Item</button>
+	<button on:click={addItem} disabled={og.title === "" || !checkValidUrl(url)}>Add Item</button>
 </div>
-<a href={url}>
-	<p>{url}</p>
-</a>
+<p />
+{#if url}
+	<div class="flex wrap">
+		<a href={url}>
+			{url}
+		</a>
+	</div>
+	<p />
+{/if}
 <div class="flex flex-row">
 	<input type="text" placeholder="Title" bind:value={og.title} />
 </div>
 <p />
 <div class="flex flex-row">
-	<input type="text" placeholder="Description" bind:value={og.description} />
+	<input type="text" placeholder="Description" bind:value={og.desc} />
 </div>
-{#each items as item, i}
+{#each items as item}
 	<p>
-		<a href={item.url}>
+		<a href={item.url} target="_blank">
 			{item.title}
 		</a>
 	</p>
 	{#if item.desc}
-		<p>{item.desc}</p>
+		<p class="flex flex-row item-desc">{item.desc}</p>
 	{/if}
 	<p>Added {displayTimestamp(item.created_at)}</p>
-	<button>Delete</button>
+	<button>Edit</button>
+	<button>Archive</button>
 {/each}

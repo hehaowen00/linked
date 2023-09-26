@@ -1,4 +1,9 @@
 body {
+	font-size: 1rem;
+}
+
+body>* {
+	font-family: Helvetica, sans-serif;
 }
 
 a,
@@ -8,24 +13,21 @@ a:hover {
 	text-decoration: none;
 }
 
-button {
-}
-
 input {
 	flex: 1;
-}
-
-.row {
+	font-size: 0.9rem;
 }
 
 select {
 	width: 100%;
+	font-size: 0.9rem;
 }
 
 .main {
 	margin: 0 auto;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+	padding-bottom: 1rem;
 	max-width: 1200px;
 }
 
@@ -33,7 +35,12 @@ select {
 	float: right;
 }
 
-h1,h2,h3,h4,h5,h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
 	margin-bottom: 0.5rem;
 	margin-top: 0.5rem;
 }
@@ -48,4 +55,13 @@ h1,h2,h3,h4,h5,h6 {
 
 .flex-col {
 	flex-direction: column;
+}
+
+.wrap {
+	word-break: break-word;
+}
+
+.item-desc {
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
