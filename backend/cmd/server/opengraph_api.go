@@ -14,7 +14,7 @@ type urlRequest struct {
 }
 
 func initOpenGraphApi(db *sql.DB, router *pathrouter.Group) {
-	ogw, queue := newOpenGraphWorker()
+	ogw, queue := opengraph.NewWorker()
 	go ogw.Run()
 
 	router.Post(
@@ -33,9 +33,9 @@ func initOpenGraphApi(db *sql.DB, router *pathrouter.Group) {
 			}
 
 			recv := make(chan *opengraph.Info)
-			queue <- &openGraphRequest{
-				url:  urlReq.Url,
-				recv: recv,
+			queue <- &opengraph.Request{
+				Url:  urlReq.Url,
+				Recv: recv,
 			}
 
 			info := <-recv

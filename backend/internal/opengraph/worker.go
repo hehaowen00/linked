@@ -1,7 +1,6 @@
-package main
+package opengraph
 
 import (
-	"linked/internal/opengraph"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -11,24 +10,24 @@ import (
 
 type openGraphWorker struct {
 	httpClient *http.Client
-	incoming   chan *openGraphRequest
+	incoming   chan *Request
 	stop       chan struct{}
 }
 
-type openGraphRequest struct {
-	url  string
-	recv chan *opengraph.Info
+type Request struct {
+	Url  string
+	Recv chan *Info
 }
 
 const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
 
-func newOpenGraphWorker() (*openGraphWorker, chan *openGraphRequest) {
+func NewWorker() (*openGraphWorker, chan *Request) {
 	jar, _ := cookiejar.New(nil)
 	client := http.Client{
 		Jar: jar,
 	}
 
-	incoming := make(chan *openGraphRequest)
+	incoming := make(chan *Request)
 	ogw := openGraphWorker{
 		httpClient: &client,
 		incoming:   incoming,
@@ -43,34 +42,35 @@ func (ogw *openGraphWorker) Run() {
 		case <-ogw.stop:
 			break
 		case req := <-ogw.incoming:
-			if strings.Contains(req.url, "localhost") {
-				req.recv <- nil
+			if strings.Contains(req.Url, "localhost") {
+				req.Recv <- nil
 				time.Sleep(1 * time.Second)
 				continue
 			}
 
-			resp, err := ogw.httpClient.Get(req.url)
+			resp, err := ogw.httpClient.Get(req.Url)
 			if err != nil {
 				log.Println("error getting webpage", err)
-				req.recv <- nil
+				req.Recv <- nil
 				time.Sleep(1 * time.Second)
 				continue
 			}
 
-			if resp.StatusCode != 200 {
-				req.recv <- nil
+			if resp.StatusCode != http.StatusOK {
+				req.Recv <- nil
 				time.Sleep(1 * time.Second)
 				return
 			}
 
-			data, err := opengraph.ParseHTML(resp.Body)
+			data, err := ParseHTML(resp.Body)
 			if err != nil {
 				log.Println(err)
-				req.recv <- nil
+				req.Recv <- nil
 				time.Sleep(1 * time.Second)
 				continue
 			}
-			req.recv <- data
+			req.Recv <- data
+			time.Sleep(1 * time.Second)
 		}
 	}
 }

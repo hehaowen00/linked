@@ -109,21 +109,11 @@ func main() {
 	})
 
 	router.Group("/api", func(g *pathrouter.Group) {
-		g.Use(pathrouter.GzipMiddleware, googleAuth.authMiddleware, Cors)
+		g.Use(pathrouter.GzipMiddleware, googleAuth.authMiddleware)
 		initCollectionsApi(appDB, g)
 		initItemsApi(appDB, g)
 		initOpenGraphApi(appDB, g)
 	})
-
-	router.Handle(
-		http.MethodOptions,
-		"*",
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
-		}),
-	)
 
 	log.Println("starting server at", cfg.Host)
 	log.Fatalln(http.ListenAndServe(cfg.Host, router))

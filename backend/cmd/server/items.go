@@ -21,7 +21,9 @@ type Item struct {
 const getItemsSql = `
 SELECT id, url, title, description, created_at
 FROM items
-WHERE collection_id = ? and user_id = ? and deleted_at = 0
+INNER JOIN item_collection_map
+ON id = item_id AND items.user_id = item_collection_map.user_id
+WHERE collection_id = ? AND items.user_id = $2
 ORDER BY title ASC;
 `
 

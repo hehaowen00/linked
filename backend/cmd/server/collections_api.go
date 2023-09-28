@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"linked/internal/constants"
 	"log"
 	"net/http"
 
@@ -12,7 +13,11 @@ import (
 func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId, ok := r.Context().Value(constants.AuthKey).(string)
+			if !ok {
+				log.Println("err missing token")
+				return
+			}
 
 			collections, err := getCollections(db, userId)
 			if err != nil {
@@ -32,7 +37,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Get("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId := r.Context().Value(constants.AuthKey).(string)
 
 			c := Collection{
 				Id:     ps.Get("collection"),
@@ -57,14 +62,16 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Post("/collections",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId := r.Context().Value(constants.AuthKey).(string)
 
 			c := Collection{
 				Id:     uuid.NewString(),
 				UserId: userId,
 			}
 
-			if err := c.isValid(); err != nil {
+			err := readJson(r.Body, &c)
+			if err != nil {
+				log.Println(err)
 				writeJson(w, http.StatusBadRequest, JsonResult{
 					Status: "error",
 					Error:  err.Error(),
@@ -72,9 +79,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 				return
 			}
 
-			err := readJson(r.Body, &c)
-			if err != nil {
-				log.Println(err)
+			if err := c.isValid(); err != nil {
 				writeJson(w, http.StatusBadRequest, JsonResult{
 					Status: "error",
 					Error:  err.Error(),
@@ -100,7 +105,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Put("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId := r.Context().Value(constants.AuthKey).(string)
 
 			c := Collection{
 				UserId: userId,
@@ -141,7 +146,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Delete("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId := r.Context().Value(constants.AuthKey).(string)
 
 			c := Collection{
 				Id:     ps.Get("collection"),

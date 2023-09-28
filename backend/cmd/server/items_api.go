@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"linked/internal/constants"
 	"log"
 	"net/http"
 
@@ -11,7 +12,7 @@ import (
 func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections/:collection/items",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId := r.Context().Value(constants.AuthKey).(string)
 
 			items, err := getItems(db, ps.Get("collection"), userId)
 			if err != nil {
@@ -28,7 +29,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Get("/collections/:collection/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId := r.Context().Value(constants.AuthKey).(string)
 
 			item := Item{
 				ID:           ps.Get("item"),
@@ -54,7 +55,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Post("/collections/:collection/items",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId := r.Context().Value(constants.AuthKey).(string)
 
 			item := Item{
 				CollectionId: ps.Get("collection"),
@@ -88,7 +89,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Put("/collections/:collection/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId := r.Context().Value(constants.AuthKey).(string)
 
 			item := Item{
 				ID:           ps.Get("item"),
@@ -123,7 +124,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 
 	router.Delete("/collections/:collection/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId := r.Context().Value("id").(string)
+			userId := r.Context().Value(constants.AuthKey).(string)
 
 			item := Item{
 				ID:           ps.Get("item"),

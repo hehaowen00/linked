@@ -4,9 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
+	"linked/internal/constants"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -28,7 +31,6 @@ type GoogleAuth struct {
 	config       *oauth2.Config
 	csrf         string
 	db           *sql.DB
-	authHost     string
 	frontendHost string
 }
 
@@ -51,31 +53,42 @@ func newGoogleAuth(host, clientId, clientSecret string, db *sql.DB) *GoogleAuth 
 
 func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-		accessToken, err := r.Cookie("access_token")
+		accessToken, err := r.Cookie(constants.AccessTokenKey)
 		if err != nil {
 			log.Println("no access token", err)
-			writeJson(w, http.StatusUnauthorized, JsonResult{
-				Status: "error",
-				Error:  "missing access token",
-			})
+			// writeJson(w, http.StatusUnauthorized, JsonResult{
+			// 	Status: "error",
+			// 	Error:  "missing access token",
+			// })
+			http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
 			return
 		}
 
 		response, err := http.Get(
-			"https://oauth2.googleapis.com/tokeninfo?access_token=" + accessToken.Value,
+			constants.GoogleOAuthTokenInfoUrl + accessToken.Value,
 		)
 		if err != nil {
 			log.Println("token info", err)
+			http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
 			return
 		}
 
 		if response.StatusCode != 200 {
+			// writeJson(w, http.StatusUnauthorized, JsonResult{
+			// 	Status: "error",
+			// 	Error:  err.Error(),
+			// })
+			http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
 			return
 		}
 
 		contents, err := io.ReadAll(response.Body)
 		if err != nil {
 			log.Println(err)
+			writeJson(w, http.StatusInternalServerError, JsonResult{
+				Status: "error",
+				Error:  err.Error(),
+			})
 			return
 		}
 
@@ -84,28 +97,39 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 		err = json.Unmarshal(contents, &info)
 		if err != nil {
 			log.Println(err)
+			writeJson(w, http.StatusInternalServerError, JsonResult{
+				Status: "error",
+				Error:  err.Error(),
+			})
+			return
 		}
 
 		if info.Audience != auth.config.ClientID {
 			log.Println("incorrect audience")
+			// writeJson(w, http.StatusUnauthorized, JsonResult{
+			// 	Status: "error",
+			// 	Error:  "audience does not match",
+			// })
+			http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
 			return
 		}
 
-		c := setContext(r.Context(), "id", info.Subject)
+		c := setContext(r.Context(), constants.AuthKey, info.Subject)
 		r = r.WithContext(c)
 		next(w, r, ps)
 	}
 }
 
 func (auth *GoogleAuth) login(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-	redirect := r.URL.Query().Get("redirect_url")
+	redirect := r.URL.Query().Get(constants.RedirectUrlKey)
+	state := fmt.Sprintf("%s&%s", auth.csrf, redirect)
+	authUrl, err := url.Parse(auth.config.AuthCodeURL(state))
+	if err != nil {
+		log.Println(err)
+	}
+	authUrl.Query().Add("approval_prompt", "auto")
 	url := auth.config.AuthCodeURL(auth.csrf + "&" + redirect)
-	http.Redirect(
-		w,
-		r,
-		url+"&approval_prompt=auto",
-		http.StatusTemporaryRedirect,
-	)
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func (auth *GoogleAuth) handleCallback(
@@ -165,14 +189,8 @@ func (auth *GoogleAuth) handleCallback(
 		return
 	}
 
-	// http.SetCookie(w, &http.Cookie{
-	// 	Name:  "refresh_token",
-	// 	Value: token.RefreshToken,
-	// 	Path:  "/",
-	// })
-
 	http.SetCookie(w, &http.Cookie{
-		Name:    "access_token",
+		Name:    constants.AccessTokenKey,
 		Value:   token.AccessToken,
 		Expires: token.Expiry,
 		Path:    "/",
@@ -187,7 +205,7 @@ func (auth *GoogleAuth) handleCallback(
 }
 
 func (auth *GoogleAuth) getUserInfo(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-	accessToken, err := r.Cookie("access_token")
+	accessToken, err := r.Cookie(constants.AccessTokenKey)
 	if err != nil {
 		log.Println("no access token", err, accessToken)
 		writeJson(w, http.StatusUnauthorized, JsonResult{
@@ -230,7 +248,7 @@ func (auth *GoogleAuth) ValidateToken(
 	r *http.Request,
 	ps *pathrouter.Params,
 ) {
-	accessToken, err := r.Cookie("access_token")
+	accessToken, err := r.Cookie(constants.AccessTokenKey)
 	if err != nil {
 		log.Println("no access token", err, accessToken)
 		writeJson(w, http.StatusUnauthorized, JsonResult{
@@ -240,7 +258,7 @@ func (auth *GoogleAuth) ValidateToken(
 		return
 	}
 	response, err := http.Get(
-		"https://oauth2.googleapis.com/tokeninfo?access_token=" + accessToken.Value,
+		constants.GoogleOAuthTokenInfoUrl + accessToken.Value,
 	)
 	if err != nil {
 		log.Println(err)
@@ -285,7 +303,7 @@ func (auth *GoogleAuth) ValidateToken(
 
 func (auth *GoogleAuth) logout(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 	http.SetCookie(w, &http.Cookie{
-		Name:    "access_token",
+		Name:    constants.AccessTokenKey,
 		Value:   "",
 		Expires: time.Now().UTC().Add(-time.Minute),
 		Path:    "/",
@@ -302,13 +320,13 @@ func (auth *GoogleAuth) getProfile(w http.ResponseWriter, r *http.Request, ps *p
 }
 
 func getUserInfo(r *http.Request) (*UserInfo, error) {
-	accessToken, err := r.Cookie("access_token")
+	accessToken, err := r.Cookie(constants.AccessTokenKey)
 	if err != nil {
 		log.Println("no access token", err)
 		return nil, err
 	}
 	response, err := http.Get(
-		"https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + accessToken.Value,
+		constants.GoogleOAuthUserInfoUrl + accessToken.Value,
 	)
 	if err != nil {
 		log.Println(err)
