@@ -69,7 +69,11 @@ export async function validateUser(fetch, host) {
 }
 
 export function loginUrl(host, redirect) {
-	return `${host}/auth/login?redirect_url=${redirect}`;
+	let url = new URL(`${host}/auth/login`);
+	if (redirect) {
+		url.searchParams.append("redirect_url", redirect);
+	}
+	return url.toString();
 }
 
 export function logoutUrl(host) {

@@ -1,0 +1,6 @@
+html[data-theme="light"] {
+  --bg-color: rgba(0, 0, 0, 0.05);
+  --color: black;
+  --link-color: blue;
+  --dialog-bg-color: #F2F2F2;
+}

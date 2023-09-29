@@ -1,38 +1,41 @@
 <script>
 	import Header from "../../../../components/header.svelte";
-	import { getOpenGraphInfo, postItem } from "../../../../api.js";
+	import { getItems, getOpenGraphInfo, postItem } from "../../../../api.js";
+	import { defaultOpenGraph } from "../../../../constants.js";
 	import { checkValidUrl, displayTimestamp } from "../../../../util.js";
+	import Item from "../../../../components/item.svelte";
 
 	export let data;
 	let collection = data.collection ?? {};
 	let items = data.items ?? [];
+	let { name, created_at, deleted_at } = collection;
+
 	let url = "";
-	let og = {
-		title: "",
-		desc: "",
-		image_url: ""
-	};
+	let opengraphInfo = { ...defaultOpenGraph };
 
 	async function pasteUrl() {
 		let resp = await navigator.clipboard.readText();
+		if (!checkValidUrl(resp)) {
+			return;
+		}
 		url = resp;
 	}
 
-	async function fetchOpenGraph(url) {
-		disableAddButton = false;
+	async function fetchOpenGraph() {
 		if (!checkValidUrl(url)) {
-			og = {
-				title: "",
-				desc: "",
-				image_url: ""
-			};
+			opengraphInfo = { ...defaultOpenGraph };
+			return;
+		}
+
+		let check = new URL(url);
+		if (!check.protocol.startsWith("http")) {
 			return;
 		}
 
 		try {
 			let res = await getOpenGraphInfo(window.fetch, data.url.origin, url);
 			if (res.ok) {
-				og = await res.json();
+				opengraphInfo = await res.json();
 			} else {
 				console.log("error", await res.json());
 			}
@@ -44,64 +47,71 @@
 	$: url && fetchOpenGraph(url);
 
 	async function addItem() {
-		if (!checkValidUrl(url) || og.title == "") {
+		if (!checkValidUrl(url) || opengraphInfo.title == "") {
 			return;
 		}
 		let res = await postItem(window.fetch, data.url.origin, collection.id, {
 			url,
-			title: og.title,
-			desc: og.desc
+			title: opengraphInfo.title,
+			desc: opengraphInfo.desc
 		});
-		let resp = await res.json();
-		items = [...items, resp.data];
+		if (!res.ok) {
+			console.log(await res.json());
+		}
+
 		url = "";
-		og = {
-			title: "",
-			desc: "",
-			image_url: ""
-		};
+		opengraphInfo = { ...defaultOpenGraph };
+
+		await refresh();
+	}
+
+	async function refresh() {
+		let res = await getItems(window.fetch, data.url.origin, collection.id);
+		items = await res.json();
 	}
 </script>
 
 <Header url={data.url.origin} />
-<h1>{collection.name}</h1>
-<div class="flex flex-row">
-	<input type="text" placeholder="URL" bind:value={url} />
-</div>
+
+<h1>{name}</h1>
 <p />
-<div class="flex flex-row">
-	<button on:click={pasteUrl}>Paste URL</button>
-</div>
-<p />
-<div class="flex flex-row">
-	<button on:click={addItem} disabled={og.title === "" || !checkValidUrl(url)}>Add Item</button>
-</div>
-<p />
-{#if url}
-	<div class="flex wrap">
-		<a href={url}>
-			{url}
-		</a>
+
+{#if deleted_at == 0}
+	<div class="content">
+		<div class="row">
+			<input type="text" placeholder="URL" bind:value={url} />
+		</div>
+		{#if url}
+			<div class="row" style="font-size: 0.9rem;">
+				<a class="link" href={url}>
+					{url}
+				</a>
+			</div>
+		{/if}
+		<div class="row">
+			<input type="text" placeholder="Title" bind:value={opengraphInfo.title} />
+		</div>
+		<div class="row">
+			<input type="text" placeholder="Description" bind:value={opengraphInfo.description} />
+		</div>
+		<div class="row">
+			<div class="col">
+				<button on:click={pasteUrl}>Paste URL</button>
+			</div>
+			<div class="col">
+				<button on:click={addItem} disabled={opengraphInfo.title === "" || !checkValidUrl(url)}>
+					Add Item
+				</button>
+			</div>
+		</div>
 	</div>
-	<p />
+	<br />
 {/if}
-<div class="flex flex-row">
-	<input type="text" placeholder="Title" bind:value={og.title} />
-</div>
-<p />
-<div class="flex flex-row">
-	<input type="text" placeholder="Description" bind:value={og.desc} />
-</div>
-{#each items as item}
-	<p>
-		<a href={item.url} target="_blank">
-			{item.title}
-		</a>
-	</p>
-	{#if item.desc}
-		<p class="flex flex-row item-desc">{item.desc}</p>
-	{/if}
-	<p>Added {displayTimestamp(item.created_at)}</p>
-	<button>Edit</button>
-	<button>Archive</button>
-{/each}
+
+{#if deleted_at === 0 || items.length > 0}
+	{#each items as item}
+		<Item canEdit={deleted_at === 0} bind:item />
+	{/each}
+{:else}
+	<h3>No Items Found</h3>
+{/if}

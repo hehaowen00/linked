@@ -1,9 +1,12 @@
 export function checkValidUrl(url) {
-	if (!url || (!url.startsWith("http://") && !url.startsWith("https://"))) {
-		console.log("invalid", url);
+	let testUrl;
+	try {
+		testUrl = new URL(url);
+		return true;
+	} catch (e) {
+		console.log("invalid url", url);
 		return false;
 	}
-	return true;
 }
 
 export function displayTimestamp(unixMillis) {

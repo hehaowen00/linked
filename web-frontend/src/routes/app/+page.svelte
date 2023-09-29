@@ -36,7 +36,7 @@
 		let res = await getCollections(window.fetch, url.origin);
 		let json = await res.json();
 		if (!res.ok) {
-			console.log(await res.json())
+			console.log(await res.json());
 			return;
 		}
 		collections = json.data;
@@ -46,15 +46,17 @@
 <Header url={url.origin} />
 
 <h1>Collections</h1>
+<p />
 
-<div class="flex flex-row">
-	<input type="text" placeholder="New Collection" bind:value={name} />
+<div class="content">
+	<div class="row">
+		<input type="text" placeholder="New Collection" bind:value={name} />
+	</div>
+	<div class="row">
+		<button on:click={newCollection}> Add Collection </button>
+	</div>
+	<p />
 </div>
-<p />
-<div class="flex flex-row">
-	<button on:click={newCollection}> Add Collection </button>
-</div>
-<p />
 
 <div class="row">
 	<select bind:value={category}>
@@ -62,6 +64,7 @@
 		<option value="deleted">Archived</option>
 	</select>
 </div>
+<br />
 
 {#if category == "all"}
 	{#each collections as collection, idx}
