@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io"
 	"linked/internal/constants"
 	"log"
@@ -60,7 +59,7 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 			// 	Status: "error",
 			// 	Error:  "missing access token",
 			// })
-			http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 			return
 		}
 
@@ -69,7 +68,7 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 		)
 		if err != nil {
 			log.Println("token info", err)
-			http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 			return
 		}
 
@@ -78,7 +77,7 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 			// 	Status: "error",
 			// 	Error:  err.Error(),
 			// })
-			http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 			return
 		}
 
@@ -110,7 +109,7 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 			// 	Status: "error",
 			// 	Error:  "audience does not match",
 			// })
-			http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 			return
 		}
 
@@ -122,13 +121,16 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 
 func (auth *GoogleAuth) login(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 	redirect := r.URL.Query().Get(constants.RedirectUrlKey)
-	state := fmt.Sprintf("%s&%s", auth.csrf, redirect)
+	state := auth.csrf
+	if redirect != "" {
+		state = state + "&" + redirect
+	}
 	authUrl, err := url.Parse(auth.config.AuthCodeURL(state))
 	if err != nil {
 		log.Println(err)
 	}
 	authUrl.Query().Add("approval_prompt", "auto")
-	url := auth.config.AuthCodeURL(auth.csrf + "&" + redirect)
+	url := auth.config.AuthCodeURL(state)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
