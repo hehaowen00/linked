@@ -171,7 +171,12 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 				return
 			}
 
-			err = deleteCollection(db, &c)
+			if c.DeletedAt == 0 {
+				err = archiveCollection(db, &c)
+			} else {
+				err = deleteCollection(db, &c)
+			}
+
 			if err != nil {
 				log.Println(err)
 				writeJson(w, http.StatusInternalServerError, JsonResult{

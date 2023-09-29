@@ -92,14 +92,24 @@ func updateCollection(db *sql.DB, c *Collection) error {
 	return err
 }
 
-const deleteCollectionSql = `
+const archiveCollectionSql = `
 UPDATE collections
 SET deleted_at = ?
 WHERE id = ? and user_id = ? and name = ? and deleted_at = 0;
 `
 
-func deleteCollection(db *sql.DB, c *Collection) error {
+func archiveCollection(db *sql.DB, c *Collection) error {
 	c.DeletedAt = time.Now().UTC().UnixMilli()
-	_, err := db.Exec(deleteCollectionSql, c.DeletedAt, c.Id, c.UserId, c.Name)
+	_, err := db.Exec(archiveCollectionSql, c.DeletedAt, c.Id, c.UserId, c.Name)
+	return err
+}
+
+const deleteCollectionSql = `
+DELETE FROM collections
+WHERE id = ? and user_id = ? and name = ? and deleted_at = ?;
+`
+
+func deleteCollection(db *sql.DB, c *Collection) error {
+	_, err := db.Exec(deleteCollectionSql, c.Id, c.UserId, c.Name, c.DeletedAt)
 	return err
 }
