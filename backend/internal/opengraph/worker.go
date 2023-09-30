@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+
 type openGraphWorker struct {
 	httpClient *http.Client
 	incoming   chan *Request
@@ -18,8 +20,6 @@ type Request struct {
 	Url  string
 	Recv chan *Info
 }
-
-const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
 
 func NewWorker() (*openGraphWorker, chan *Request) {
 	jar, _ := cookiejar.New(nil)
@@ -40,7 +40,7 @@ func (ogw *openGraphWorker) Run() {
 	for {
 		select {
 		case <-ogw.stop:
-			break
+			return
 		case req := <-ogw.incoming:
 			if strings.Contains(req.Url, "localhost") {
 				req.Recv <- nil
@@ -48,7 +48,7 @@ func (ogw *openGraphWorker) Run() {
 				continue
 			}
 
-			resp, err := ogw.httpClient.Get(req.Url)
+			resp, err := ogw.httpClient.Do(makeRequest(req.Url))
 			if err != nil {
 				log.Println("error getting webpage", err)
 				req.Recv <- nil
@@ -69,8 +69,31 @@ func (ogw *openGraphWorker) Run() {
 				time.Sleep(1 * time.Second)
 				continue
 			}
+
+			faviconUrl := GetFavicon(req.Url)
+
+			resp, err = ogw.httpClient.Do(makeRequest(faviconUrl))
+			if err != nil {
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			if resp.StatusCode == http.StatusOK {
+				data.ImageURL = faviconUrl
+			}
+
 			req.Recv <- data
 			time.Sleep(1 * time.Second)
 		}
 	}
+}
+
+func makeRequest(url string) *http.Request {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+	}
+
+	req.Header.Set("User-Agent", userAgent)
+
+	return req
 }
