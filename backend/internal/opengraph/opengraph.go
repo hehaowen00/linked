@@ -14,7 +14,7 @@ type Info struct {
 	ImageURL    string `json:"image_url"`
 }
 
-func ParseHTML(stream io.Reader) (*Info, error) {
+func parseHtml(stream io.Reader) (*Info, error) {
 	doc, err := goquery.NewDocumentFromReader(stream)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func ParseHTML(stream io.Reader) (*Info, error) {
 	return &info, nil
 }
 
-func GetFavicon(requestUrl string) string {
+func getFavicon(requestUrl string) string {
 	req, err := url.Parse(requestUrl)
 	if err != nil {
 		panic(err)

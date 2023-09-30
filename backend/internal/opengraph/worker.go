@@ -62,7 +62,7 @@ func (ogw *openGraphWorker) Run() {
 				return
 			}
 
-			data, err := ParseHTML(resp.Body)
+			data, err := parseHtml(resp.Body)
 			if err != nil {
 				log.Println(err)
 				req.Recv <- nil
@@ -70,7 +70,7 @@ func (ogw *openGraphWorker) Run() {
 				continue
 			}
 
-			faviconUrl := GetFavicon(req.Url)
+			faviconUrl := getFavicon(req.Url)
 
 			resp, err = ogw.httpClient.Do(makeRequest(faviconUrl))
 			if err != nil {
@@ -89,10 +89,7 @@ func (ogw *openGraphWorker) Run() {
 }
 
 func makeRequest(url string) *http.Request {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-	}
-
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set("User-Agent", userAgent)
 
 	return req
