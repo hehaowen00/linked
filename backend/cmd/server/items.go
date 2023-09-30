@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -56,7 +57,7 @@ func getItems(db *sql.DB, collectionId, userId string) ([]*Item, error) {
 const getItemSql = `
 SELECT title, url, description, created_at
 FROM items
-WHERE id = ? and collection_id = ? and user_id = ? and deleted_at = 0;
+WHERE id = ? and user_id = ? and deleted_at = 0;
 `
 
 func getItem(db *sql.DB, item *Item) error {
@@ -65,23 +66,78 @@ func getItem(db *sql.DB, item *Item) error {
 	return err
 }
 
+const getItemByUrlSql = `
+SELECT id
+FROM items
+WHERE user_id = ? AND url = ?;
+`
+
+func getItemByUrl(db *sql.DB, item *Item) (bool, error) {
+	row := db.QueryRow(getItemByUrlSql, item.UserId, item.URL)
+
+	err := row.Scan(&item.ID)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+
+	return true, err
+}
+
 const createItemSql = `
-INSERT INTO items (id, collection_id, user_id, title, url, description, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO items (id, user_id, title, url, description, created_at)
+VALUES (?, ?, ?, ?, ?, ?);
+`
+
+const addItemCollectionSql = `
+INSERT INTO item_collection_map (user_id, collection_id, item_id)
+VALUES (?, ?, ?);
 `
 
 func createItem(db *sql.DB, item *Item) error {
 	item.ID = uuid.NewString()
 	item.CreatedAt = time.Now().UTC().UnixMilli()
-	_, err := db.Exec(
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(
 		createItemSql,
 		item.ID,
-		item.CollectionId,
 		item.UserId,
 		item.Title,
 		item.URL,
 		item.Description,
 		item.CreatedAt,
+	)
+	if err != nil {
+		log.Println("user might have already added this item", err)
+		return err
+	}
+
+	_, err = tx.Exec(
+		addItemCollectionSql,
+		item.UserId,
+		item.CollectionId,
+		item.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+
+	return err
+}
+
+func addItemToCollection(db *sql.DB, item *Item) error {
+	_, err := db.Exec(
+		addItemCollectionSql,
+		item.UserId,
+		item.CollectionId,
+		item.ID,
 	)
 	return err
 }
@@ -89,7 +145,7 @@ func createItem(db *sql.DB, item *Item) error {
 const updateItemSql = `
 UPDATE items
 SET title = ?, description = ?
-WHERE id = ? and collection_id = ? and user_id = ? and deleted_at = 0;
+WHERE id = ? and user_id = ? and url = ? and deleted_at = 0;
 `
 
 func updateItem(db *sql.DB, item *Item) error {
@@ -98,8 +154,8 @@ func updateItem(db *sql.DB, item *Item) error {
 		item.Title,
 		item.Description,
 		item.ID,
-		item.CollectionId,
 		item.UserId,
+		item.URL,
 	)
 	return err
 }
@@ -107,7 +163,7 @@ func updateItem(db *sql.DB, item *Item) error {
 const deleteItemSql = `
 DELETE items
 SET deleted_at = ?
-WHERE id = ? and collection_id = ? and user_id = ? and deleted_at = 0;
+WHERE id = ? and user_id = ? and deleted_at = 0;
 `
 
 func deleteItem(db *sql.DB, item *Item) error {

@@ -69,12 +69,12 @@ func main() {
 
 	router := pathrouter.NewRouter()
 
-	router.Use(func(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			log.Println(r.Method, r.URL.Path)
-			next(w, r, ps)
-		}
-	})
+	// router.Use(func(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
+	// 	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	// 		log.Println(r.Method, r.URL.Path)
+	// 		next(w, r, ps)
+	// 	}
+	// })
 
 	router.Get("/*", func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 		path := ps.Get("*")

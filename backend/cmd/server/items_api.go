@@ -64,6 +64,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 
 			err := readJson(r.Body, &item)
 			if err != nil {
+				log.Println(err)
 				writeJson(w, http.StatusBadRequest, JsonResult{
 					Status: "error",
 					Error:  err.Error(),
@@ -71,14 +72,46 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 				return
 			}
 
-			err = createItem(db, &item)
+			exists, err := getItemByUrl(db, &item)
 			if err != nil {
 				log.Println(err)
-				writeJson(w, http.StatusInternalServerError, JsonResult{
+				writeJson(w, http.StatusBadRequest, JsonResult{
 					Status: "error",
 					Error:  err.Error(),
 				})
 				return
+			}
+
+			if !exists {
+				err = createItem(db, &item)
+				if err != nil {
+					log.Println(err)
+					writeJson(w, http.StatusInternalServerError, JsonResult{
+						Status: "error",
+						Error:  err.Error(),
+					})
+					return
+				}
+			} else {
+				err = updateItem(db, &item)
+				if err != nil {
+					log.Println(err)
+					writeJson(w, http.StatusInternalServerError, JsonResult{
+						Status: "error",
+						Error:  err.Error(),
+					})
+					return
+				}
+
+				err = addItemToCollection(db, &item)
+				if err != nil {
+					log.Println(err)
+					writeJson(w, http.StatusInternalServerError, JsonResult{
+						Status: "error",
+						Error:  err.Error(),
+					})
+					return
+				}
 			}
 
 			writeJson(w, http.StatusOK, JsonResult{
@@ -99,6 +132,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 
 			err := readJson(r.Body, &item)
 			if err != nil {
+				log.Println(err)
 				writeJson(w, http.StatusBadRequest, JsonResult{
 					Status: "error",
 					Error:  err.Error(),

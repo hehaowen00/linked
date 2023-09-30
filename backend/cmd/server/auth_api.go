@@ -59,7 +59,7 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 			// 	Status: "error",
 			// 	Error:  "missing access token",
 			// })
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
 
@@ -68,7 +68,7 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 		)
 		if err != nil {
 			log.Println("token info", err)
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
 
@@ -77,17 +77,18 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 			// 	Status: "error",
 			// 	Error:  err.Error(),
 			// })
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
 
 		contents, err := io.ReadAll(response.Body)
 		if err != nil {
 			log.Println(err)
-			writeJson(w, http.StatusInternalServerError, JsonResult{
-				Status: "error",
-				Error:  err.Error(),
-			})
+			// writeJson(w, http.StatusInternalServerError, JsonResult{
+			// 	Status: "error",
+			// 	Error:  err.Error(),
+			// })
+			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
 
@@ -96,10 +97,11 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 		err = json.Unmarshal(contents, &info)
 		if err != nil {
 			log.Println(err)
-			writeJson(w, http.StatusInternalServerError, JsonResult{
-				Status: "error",
-				Error:  err.Error(),
-			})
+			// writeJson(w, http.StatusInternalServerError, JsonResult{
+			// 	Status: "error",
+			// 	Error:  err.Error(),
+			// })
+			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
 
@@ -109,7 +111,7 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 			// 	Status: "error",
 			// 	Error:  "audience does not match",
 			// })
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
 
