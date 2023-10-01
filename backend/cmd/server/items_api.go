@@ -13,6 +13,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections/:collection/items",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			items, err := getItems(db, ps.Get("collection"), userId)
 			if err != nil {
@@ -27,14 +28,14 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 			writeJson(w, http.StatusOK, items)
 		})
 
-	router.Get("/collections/:collection/items/:item",
+	router.Get("/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			item := Item{
-				ID:           ps.Get("item"),
-				CollectionId: ps.Get("collection"),
-				UserId:       userId,
+				ID:     ps.Get("item"),
+				UserId: userId,
 			}
 
 			err := getItem(db, &item)
@@ -56,6 +57,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Post("/collections/:collection/items",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			item := Item{
 				CollectionId: ps.Get("collection"),
@@ -120,14 +122,14 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 			})
 		})
 
-	router.Put("/collections/:collection/items/:item",
+	router.Put("/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			item := Item{
-				ID:           ps.Get("item"),
-				CollectionId: ps.Get("collection"),
-				UserId:       userId,
+				ID:     ps.Get("item"),
+				UserId: userId,
 			}
 
 			err := readJson(r.Body, &item)
@@ -156,9 +158,10 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 			})
 		})
 
-	router.Delete("/collections/:collection/items/:item",
+	router.Delete("/collection/:collection/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			item := Item{
 				ID:           ps.Get("item"),

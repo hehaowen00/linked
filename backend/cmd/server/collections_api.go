@@ -13,11 +13,8 @@ import (
 func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-			userId, ok := r.Context().Value(constants.AuthKey).(string)
-			if !ok {
-				log.Println("err missing token")
-				return
-			}
+			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			collections, err := getCollections(db, userId)
 			if err != nil {
@@ -38,6 +35,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Get("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			c := Collection{
 				Id:     ps.Get("collection"),
@@ -63,6 +61,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Post("/collections",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			c := Collection{
 				Id:     uuid.NewString(),
@@ -106,6 +105,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Put("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			c := Collection{
 				UserId: userId,
@@ -147,6 +147,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 	router.Delete("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
 
 			c := Collection{
 				Id:     ps.Get("collection"),

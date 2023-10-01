@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"io"
 	"linked/internal/constants"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goccy/go-json"
 	"github.com/google/uuid"
 	pathrouter "github.com/hehaowen00/path-router"
 	"golang.org/x/oauth2"
@@ -52,6 +52,8 @@ func newGoogleAuth(host, clientId, clientSecret string, db *sql.DB) *GoogleAuth 
 
 func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+		defer r.Body.Close()
+
 		accessToken, err := r.Cookie(constants.AccessTokenKey)
 		if err != nil {
 			log.Println("no access token", err)
@@ -122,6 +124,8 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 }
 
 func (auth *GoogleAuth) login(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	defer r.Body.Close()
+
 	redirect := r.URL.Query().Get(constants.RedirectUrlKey)
 	state := auth.csrf
 	if redirect != "" {
@@ -141,6 +145,8 @@ func (auth *GoogleAuth) handleCallback(
 	r *http.Request,
 	ps *pathrouter.Params,
 ) {
+	defer r.Body.Close()
+
 	stateValue := r.FormValue("state")
 	codeValue := r.FormValue("code")
 
@@ -209,6 +215,8 @@ func (auth *GoogleAuth) handleCallback(
 }
 
 func (auth *GoogleAuth) getUserInfo(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	defer r.Body.Close()
+
 	accessToken, err := r.Cookie(constants.AccessTokenKey)
 	if err != nil {
 		log.Println("no access token", err, accessToken)
@@ -252,6 +260,8 @@ func (auth *GoogleAuth) ValidateToken(
 	r *http.Request,
 	ps *pathrouter.Params,
 ) {
+	defer r.Body.Close()
+
 	accessToken, err := r.Cookie(constants.AccessTokenKey)
 	if err != nil {
 		log.Println("no access token", err, accessToken)
@@ -306,6 +316,8 @@ func (auth *GoogleAuth) ValidateToken(
 }
 
 func (auth *GoogleAuth) logout(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	defer r.Body.Close()
+
 	http.SetCookie(w, &http.Cookie{
 		Name:    constants.AccessTokenKey,
 		Value:   "",
@@ -316,6 +328,8 @@ func (auth *GoogleAuth) logout(w http.ResponseWriter, r *http.Request, ps *pathr
 }
 
 func (auth *GoogleAuth) getProfile(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	defer r.Body.Close()
+
 	info, err := getUserInfo(r)
 	if err != nil {
 	}

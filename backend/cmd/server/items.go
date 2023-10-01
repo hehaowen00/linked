@@ -61,7 +61,7 @@ WHERE id = ? and user_id = ? and deleted_at = 0;
 `
 
 func getItem(db *sql.DB, item *Item) error {
-	row := db.QueryRow(getItemSql, item.ID, item.CollectionId, item.UserId)
+	row := db.QueryRow(getItemSql, item.ID, item.UserId)
 	err := row.Scan(&item.Title, &item.URL, &item.Description, &item.CreatedAt)
 	return err
 }
