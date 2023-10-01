@@ -3,6 +3,7 @@ package opengraph
 import (
 	"io"
 	"net/url"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -10,7 +11,7 @@ import (
 type Info struct {
 	Title       string `json:"title"`
 	Type        string `json:"type"`
-	Description string `json:"description"`
+	Description string `json:"desc"`
 	ImageURL    string `json:"image_url"`
 }
 
@@ -22,25 +23,27 @@ func parseHtml(stream io.Reader) (*Info, error) {
 
 	info := Info{}
 
-	title := doc.Find("title").Text()
-	info.Title = title
+	title := doc.Find("title").First().Text()
+	info.Title = strings.TrimSpace(title)
 
-	node := doc.Find(`meta[property="og:title"]`)
+	node := doc.Find(`meta[property="og:title"]`).First()
 
 	v, exists := node.Attr("content")
 	if !exists {
 		return &info, nil
 	}
-	info.Title = v
+	if len(v) >= len(info.Title) {
+		info.Title = v
+	}
 
-	node = doc.Find(`meta[property="og:type"]`)
+	node = doc.Find(`meta[property="og:type"]`).First()
 	v, exists = node.Attr("content")
 	if !exists {
 		return &info, nil
 	}
 	info.Type = v
 
-	node = doc.Find(`meta[property="og:description"]`)
+	node = doc.Find(`meta[property="og:description"]`).First()
 	v, exists = node.Attr("content")
 	if !exists {
 		return &info, nil
