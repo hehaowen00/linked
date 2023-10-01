@@ -37,7 +37,7 @@
 	</div>
 	<p />
 	<form method="dialog">
-		<div class="row">
+		<div class="row spaced-left">
 			<div class="col">
 				<button disabled={name !== confirmValue} on:click={cb}>Confirm</button>
 			</div>

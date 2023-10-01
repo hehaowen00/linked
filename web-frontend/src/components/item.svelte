@@ -34,7 +34,7 @@
 	<!-- 	<p class="row item-desc timestamp">{desc}</p> -->
 	<!-- {/if} -->
 	<div class="timestamp">Added {displayTimestamp(created_at)}</div>
-	<div class="row">
+	<div class="row spaced-left">
 		<button on:click={copyLink}>
 			{#if copied}
 				Copied!

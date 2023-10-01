@@ -48,14 +48,7 @@ func parseHtml(stream io.Reader) (*Info, error) {
 	if !exists {
 		return &info, nil
 	}
-	info.Description = v
-
-	// node = doc.Find(`meta[property="og:image"]`)
-	// v, exists = node.Attr("content")
-	// if !exists {
-	// 	return &info, nil
-	// }
-	// info.ImageURL = v
+	info.Description = strings.ReplaceAll(strings.TrimSpace(v), "\n", "")
 
 	return &info, nil
 }

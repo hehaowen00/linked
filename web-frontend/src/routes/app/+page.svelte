@@ -56,7 +56,7 @@
 </div>
 
 <div class="row">
-	<select bind:value={category}>
+	<select class="w-100" bind:value={category}>
 		<option value="all" selected>All</option>
 		<option value="deleted">Archived</option>
 	</select>

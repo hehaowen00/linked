@@ -44,16 +44,16 @@
 		<a href="/app/bookmarks/c8n/{id}">{name}</a>
 	</div>
 	{#if deleted_at == 0}
-		<div class="row">
+		<div class="row spaced-left">
 			<span class="timestamp">Created at {displayTimestamp(created_at)}</span>
 		</div>
-		<div class="row">
+		<div class="row spaced-left">
 			<button on:click={gotoEdit}>Edit</button>
 			<button on:click={archive}>Archive</button>
 		</div>
 	{:else}
 		<div class="timestamp">Archived at {displayTimestamp(deleted_at)}</div>
-		<div class="row">
+		<div class="row spaced-left">
 			<button on:click={unarchive}>Unarchive</button>
 			<button on:click={confirm}>Delete</button>
 		</div>

@@ -21,10 +21,8 @@
 </script>
 
 <div class="row">
-	<div class="col">
-		<a href="/app">Home</a>
-	</div>
-	<div class="row">
+	<a href="/app">Home</a>
+	<div class="row ml-auto spaced-left">
 		<select on:change={setTheme} bind:value={theme}>
 			<option value="dark">Dark Mode</option>
 			<option value="light">Light Mode</option>

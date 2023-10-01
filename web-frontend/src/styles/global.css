@@ -13,6 +13,7 @@ a:visited,
 a:hover {
 	color: var(--link-color);
 	text-decoration: none;
+	word-break: break-all;
 }
 
 button {
@@ -56,12 +57,18 @@ input[type="text"]:focus {
 }
 
 select {
-	width: 100%;
 	font-size: 0.9rem;
 }
 
 select:focus {
 	outline: none;
+}
+
+textarea {
+	display: flex;
+	flex-direction: row;
+	flex: 1;
+	font-size: 0.9rem;
 }
 
 #main-content {
@@ -106,7 +113,6 @@ select:focus {
 .row {
 	display: flex;
 	flex-direction: row;
-	flex-wrap: flex;
 }
 
 .col {
@@ -137,8 +143,16 @@ select:focus {
 	margin-top: 0.25rem;
 }
 
-.row > * + * {
+/* .row > * + * { */
+/* 	margin-left: 0.25rem; */
+/* } */
+
+.spaced-left > * + * {
 	margin-left: 0.25rem;
+}
+
+.spaced-top > * + * {
+	margin-top: 0.25rem;
 }
 
 .col + .col {
@@ -152,6 +166,10 @@ select:focus {
 
 .timestamp {
 	font-size: 0.8rem;
+}
+
+.w-100 {
+	width: 100%;
 }
 
 @media (min-width: 640px) {
