@@ -37,13 +37,6 @@ insert into item_collection_map (user_id, collection_id, item_id)
 select user_id, collection_id, id
 from items_backup;
 
-create table item_tag_map (
-    user_id text not null,
-    item_id text not null,
-    tag_id text not null,
-    primary key (user_id, item_id, tag_id)
-);
-
 drop table profiles;
 
 drop table items_backup;

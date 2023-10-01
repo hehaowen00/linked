@@ -32,6 +32,8 @@ type Config struct {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	cfg := Config{}
 
 	err := config.LoadEnv(&cfg)

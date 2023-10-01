@@ -79,6 +79,8 @@ func RunMigrations(db *sql.DB, path string) error {
 	}
 
 	var migrations []string
+	absPath, _ := filepath.Abs(path)
+	log.Println("walking", absPath)
 
 	filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {

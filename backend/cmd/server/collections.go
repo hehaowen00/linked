@@ -109,7 +109,39 @@ DELETE FROM collections
 WHERE id = ? and user_id = ? and name = ? and deleted_at = ?;
 `
 
+const deleteItemsFromCollectionSql = `
+DELETE FROM item_collection_map
+WHERE collection_id = ?;
+`
+
+const deleteOrphanedItemsSql = `
+DELETE FROM items
+WHERE items.id NOT IN (SELECT item_id FROM item_collection_map);
+`
+
 func deleteCollection(db *sql.DB, c *Collection) error {
-	_, err := db.Exec(deleteCollectionSql, c.Id, c.UserId, c.Name, c.DeletedAt)
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(deleteCollectionSql, c.Id, c.UserId, c.Name, c.DeletedAt)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(deleteItemsFromCollectionSql, c.Id)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(deleteOrphanedItemsSql)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+
 	return err
 }

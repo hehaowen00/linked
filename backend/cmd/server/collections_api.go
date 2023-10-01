@@ -172,8 +172,10 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 			}
 
 			if c.DeletedAt == 0 {
+				log.Println("archive collection")
 				err = archiveCollection(db, &c)
 			} else {
+				log.Println("delete collection")
 				err = deleteCollection(db, &c)
 			}
 
