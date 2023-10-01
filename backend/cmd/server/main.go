@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"linked/internal/config"
 	"linked/internal/migrations"
 	"log"
@@ -90,9 +91,12 @@ func main() {
 			path = "index.html"
 		}
 
-		bytes, err := os.ReadFile(cfg.StaticDir + path)
+		fp := filepath.Join(cfg.StaticDir + path)
+
+		f, err := os.OpenFile(fp, os.O_RDONLY, 0777)
 		if err != nil {
-			bytes, err = os.ReadFile(cfg.StaticDir + "index.html")
+			fp := filepath.Join(cfg.StaticDir, "index.html")
+			f, err = os.OpenFile(fp, os.O_RDONLY, 0777)
 		}
 
 		if err != nil {
@@ -102,7 +106,7 @@ func main() {
 
 		contentType := mime.TypeByExtension(filepath.Ext(path))
 		w.Header().Add("Content-Type", contentType)
-		w.Write(bytes)
+		io.Copy(w, f)
 	})
 
 	router.Group("/auth", func(g *pathrouter.Group) {
