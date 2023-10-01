@@ -2,7 +2,7 @@ export const ssr = false;
 export const prerender = false;
 
 import { redirect } from "@sveltejs/kit";
-import { getCollectionById, getItems, loginUrl } from "../../../../api";
+import { getCollectionById, getItems, loginUrl } from "../../../../../api";
 
 export async function load({ fetch, url, params }) {
 	try {

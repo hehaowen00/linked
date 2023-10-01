@@ -1,10 +1,11 @@
 <script>
+	import { goto } from "$app/navigation";
 	import { displayTimestamp } from "../util";
 
 	export let canEdit = true;
 	export let item;
 
-	let { url, title, desc, created_at } = item;
+	let { id, url, title, desc, created_at } = item;
 	let copied = false;
 
 	async function copyLink() {
@@ -17,6 +18,10 @@
 			copied = false;
 		}, 500);
 	}
+
+	function editItem() {
+		goto(`/app/bookmarks/item/${id}/edit`);
+	}
 </script>
 
 <div class="item">
@@ -25,9 +30,9 @@
 			{title}
 		</a>
 	</div>
-	{#if desc}
-		<p class="row item-desc">{desc}</p>
-	{/if}
+	<!-- {#if desc} -->
+	<!-- 	<p class="row item-desc timestamp">{desc}</p> -->
+	<!-- {/if} -->
 	<div class="timestamp">Added {displayTimestamp(created_at)}</div>
 	<div class="row">
 		<button on:click={copyLink}>
@@ -39,8 +44,8 @@
 		</button>
 
 		{#if canEdit}
-			<button>Edit</button>
-			<button>Archive</button>
+			<button on:click={editItem}>View</button>
+			<button>Remove</button>
 		{/if}
 	</div>
 	<br />

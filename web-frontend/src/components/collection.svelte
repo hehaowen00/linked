@@ -12,7 +12,7 @@
 	}
 
 	function gotoEdit() {
-		goto(`/app/collections/${id}/edit`);
+		goto(`/app/bookmarks/c8n/${id}/edit`);
 	}
 
 	async function unarchive() {
@@ -28,8 +28,7 @@
 		collection.deleted_at = json.data.deleted_at;
 	}
 
-	function promptDelete() {
-		console.log("delete dialog");
+	function confirm() {
 		$dialogStore.type = "Collection";
 		$dialogStore.name = name;
 		$dialogStore.cb = async function () {
@@ -42,7 +41,7 @@
 
 <div class="collection">
 	<div class="row">
-		<a href="/app/collections/{id}">{name}</a>
+		<a href="/app/bookmarks/c8n/{id}">{name}</a>
 	</div>
 	{#if deleted_at == 0}
 		<div class="row">
@@ -56,7 +55,7 @@
 		<div class="timestamp">Archived at {displayTimestamp(deleted_at)}</div>
 		<div class="row">
 			<button on:click={unarchive}>Unarchive</button>
-			<button on:click={promptDelete}>Delete</button>
+			<button on:click={confirm}>Delete</button>
 		</div>
 	{/if}
 	<br />

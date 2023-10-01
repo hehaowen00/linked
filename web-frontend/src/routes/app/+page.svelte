@@ -1,7 +1,6 @@
 <script>
 	import { getCollections, putCollection, postCollection } from "../../api.js";
 	import Collection from "../../components/collection.svelte";
-	import Header from "../../components/header.svelte";
 
 	export let data;
 	let { collections, url } = data;
@@ -43,9 +42,7 @@
 	}
 </script>
 
-<Header url={url.origin} />
-
-<h1>Collections</h1>
+<h1>Bookmarks</h1>
 <p />
 
 <div class="content">
@@ -67,15 +64,17 @@
 <br />
 
 {#if category == "all"}
-	{#each collections as collection, idx}
-		{#if collection.deleted_at == 0}
-			<Collection bind:collection={collections[idx]} {update} />
-		{/if}
+	{#each collections as collection}
+		{#key collection}
+			<Collection {collection} {update} />
+		{/key}
 	{/each}
 {:else}
-	{#each collections as collection, idx}
+	{#each collections as collection}
 		{#if collection.deleted_at != 0}
-			<Collection bind:collection={collections[idx]} {update} />
+			{#key collection}
+				<Collection {collection} {update} />
+			{/key}
 		{/if}
 	{/each}
 {/if}

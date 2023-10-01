@@ -5,14 +5,12 @@
 
 	let theme;
 
-	function setThemeDark() {
-		document.documentElement.setAttribute("data-theme", "dark");
-		$colorScheme = "dark";
-	}
-
-	function setThemeLight() {
-		document.documentElement.setAttribute("data-theme", "light");
-		$colorScheme = "light";
+	function setTheme(value) {
+		if (value === "dark") {
+			$colorScheme = value;
+		} else if (value === "light") {
+			$colorScheme = value;
+		}
 	}
 
 	colorScheme.subscribe((v) => {
@@ -20,14 +18,6 @@
 	});
 
 	$: setTheme(theme);
-
-	function setTheme(value) {
-		if (value === "dark") {
-			setThemeDark();
-		} else if (value === "light") {
-			setThemeLight();
-		}
-	}
 </script>
 
 <div class="row">

@@ -1,14 +1,13 @@
 <script>
-	import Header from "../../../../components/header.svelte";
-	import { getItems, getOpenGraphInfo, postItem } from "../../../../api.js";
-	import { defaultOpenGraph } from "../../../../constants.js";
-	import { checkValidUrl, displayTimestamp } from "../../../../util.js";
-	import Item from "../../../../components/item.svelte";
+	import Item from "../../../../../components/item.svelte";
+	import { getItems, getOpenGraphInfo, postItem } from "../../../../../api.js";
+	import { defaultOpenGraph } from "../../../../../constants.js";
+	import { checkValidUrl } from "../../../../../util.js";
 
 	export let data;
 	let collection = data.collection ?? {};
 	let items = data.items ?? [];
-	let { name, created_at, deleted_at } = collection;
+	let { name, deleted_at } = collection;
 
 	let url = "";
 	let opengraphInfo = { ...defaultOpenGraph };
@@ -34,6 +33,9 @@
 
 		try {
 			let res = await getOpenGraphInfo(window.fetch, data.url.origin, url);
+			if (res.redirected) {
+				goto(res.url);
+			}
 			if (res.ok) {
 				opengraphInfo = await res.json();
 			} else {
@@ -70,8 +72,6 @@
 		items = await res.json();
 	}
 </script>
-
-<Header url={data.url.origin} />
 
 <h1>{name}</h1>
 <p />
@@ -110,7 +110,9 @@
 
 {#if deleted_at === 0 || items.length > 0}
 	{#each items as item}
-		<Item canEdit={deleted_at === 0} bind:item />
+		{#key item}
+			<Item canEdit={deleted_at === 0} {item} />
+		{/key}
 	{/each}
 {:else}
 	<h3>No Items Found</h3>

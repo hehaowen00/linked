@@ -39,6 +39,13 @@ export async function getItems(fetch, host, id) {
 	return res;
 }
 
+export async function getItemById(fetch, host, id) {
+	let res = await fetch(`${host}/api/items/${id}`, {
+		credentials: "include"
+	});
+	return res;
+}
+
 export async function postItem(fetch, host, collectionId, payload) {
 	let res = await fetch(`${host}/api/collections/${collectionId}/items`, {
 		method: "POST",
@@ -47,6 +54,17 @@ export async function postItem(fetch, host, collectionId, payload) {
 	});
 	return res;
 }
+
+export async function putItem(fetch, host, item) {
+	let res = await fetch(`${host}/api/items/${item.id}`, {
+		method: "PUT",
+		credentials: "include",
+		body: JSON.stringify(item)
+	});
+	return res;
+}
+
+export async function removeItem(fetch, host, collectionId, itemId) {}
 
 export async function getOpenGraphInfo(fetch, host, url) {
 	try {

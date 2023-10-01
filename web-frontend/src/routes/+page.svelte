@@ -1,8 +1,8 @@
 <script>
-	import { loginUrl } from "../api.js";
+	import { loginUrl } from "../api";
+
 	export let data;
 	let { url } = data;
-	console.log(url);
 </script>
 
 <div class="main col text-center">

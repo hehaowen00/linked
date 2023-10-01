@@ -33,7 +33,7 @@
 	</div>
 	<p />
 	<div class="flex row">
-		<input type="text" placeholder="Type {name} to confirm" bind:value={confirmValue} />
+		<input type="text" placeholder="Enter {name} to confirm" bind:value={confirmValue} />
 	</div>
 	<p />
 	<form method="dialog">
