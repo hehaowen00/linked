@@ -3,7 +3,6 @@ package main
 import (
 	"io"
 	"linked/internal/config"
-	"linked/internal/migrations"
 	"log"
 	"mime"
 	"net/http"
@@ -30,6 +29,59 @@ type Config struct {
 
 	AuthHost     string `env:"AUTH_HOST"`
 	FrontendHost string `env:"FRONTEND_HOST"`
+}
+
+func main() {
+	cfg := Config{}
+
+	err := config.LoadEnv(&cfg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	appDB, err := loadDB(cfg.AppDBPath, cfg.AppDBMigrations)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	authDB, err := loadDB(cfg.AuthDBPath, cfg.AuthDBMigrations)
+	if err != nil {
+		log.Println("error running migrations:", err)
+		return
+	}
+
+	googleAuth := newGoogleAuth(cfg.AuthHost, cfg.GoogleClientID, cfg.GoogleClientSecret, authDB)
+	googleAuth.frontendHost = cfg.FrontendHost
+
+	router := pathrouter.NewRouter()
+	router.Use(pathrouter.GzipMiddleware)
+
+	router.Get("/*", createSPAHandler(cfg.StaticDir))
+
+	router.Group("/auth", func(g *pathrouter.Group) {
+		g.Use(cors)
+		initAuthApi(authDB, googleAuth, g)
+	})
+
+	router.Group("/api", func(g *pathrouter.Group) {
+		g.Use(googleAuth.authMiddleware)
+		initCollectionsApi(appDB, g)
+		initItemsApi(appDB, g)
+		initOpenGraphApi(appDB, g)
+	})
+
+	log.Println("starting server at", cfg.Host)
+	log.Fatalln(http.ListenAndServe(cfg.Host, router))
+}
+
+func cors(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		next(w, r, ps)
+	}
 }
 
 func createSPAHandler(rootDir string) pathrouter.HandlerFunc {
@@ -60,77 +112,5 @@ func createSPAHandler(rootDir string) pathrouter.HandlerFunc {
 		contentType := mime.TypeByExtension(filepath.Ext(path))
 		w.Header().Add("Content-Type", contentType)
 		io.Copy(w, f)
-	}
-}
-
-func main() {
-	cfg := Config{}
-
-	err := config.LoadEnv(&cfg)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	appDB, err := openSqliteDB(cfg.AppDBPath)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	err = migrations.RunMigrations(appDB, cfg.AppDBMigrations)
-	if err != nil {
-		log.Println("error running migrations:", err)
-		return
-	}
-
-	authDB, err := openSqliteDB(cfg.AuthDBPath)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	err = migrations.RunMigrations(authDB, cfg.AuthDBMigrations)
-	if err != nil {
-		log.Println("error running migrations:", err)
-		return
-	}
-
-	googleAuth := newGoogleAuth(cfg.AuthHost, cfg.GoogleClientID, cfg.GoogleClientSecret, authDB)
-	googleAuth.frontendHost = cfg.FrontendHost
-
-	router := pathrouter.NewRouter()
-	router.Use(pathrouter.GzipMiddleware)
-
-	// router.Use(func(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
-	// 	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-	// 		log.Println(r.Method, r.URL.Path)
-	// 		next(w, r, ps)
-	// 	}
-	// })
-
-	router.Get("/*", createSPAHandler(cfg.StaticDir))
-
-	router.Group("/auth", func(g *pathrouter.Group) {
-		g.Use(Cors)
-		initAuthApi(authDB, googleAuth, g)
-	})
-
-	router.Group("/api", func(g *pathrouter.Group) {
-		g.Use(googleAuth.authMiddleware)
-		initCollectionsApi(appDB, g)
-		initItemsApi(appDB, g)
-		initOpenGraphApi(appDB, g)
-	})
-
-	log.Println("starting server at", cfg.Host)
-	log.Fatalln(http.ListenAndServe(cfg.Host, router))
-}
-
-func Cors(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		next(w, r, ps)
 	}
 }

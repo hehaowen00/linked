@@ -13,5 +13,3 @@ colorScheme.subscribe((theme) => {
 		localStorage.setItem("theme", theme);
 	}
 });
-
-export const userStore = writable({});
