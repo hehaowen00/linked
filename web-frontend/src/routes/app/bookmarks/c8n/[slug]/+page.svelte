@@ -31,15 +31,13 @@
 			return;
 		}
 
-		try {
-			let res = await getOpenGraphInfo(window.fetch, window.origin, url);
-			if (res.redirected) {
-				goto(res.url);
-			}
-			if (res.ok) {
-				opengraphInfo = await res.json();
-			}
-		} catch (e) {}
+		let res = await getOpenGraphInfo(window.fetch, window.origin, url);
+		if (res.redirected) {
+			goto(res.url);
+		}
+		if (res.ok) {
+			opengraphInfo = await res.json();
+		}
 	}
 
 	$: url && fetchOpenGraph(url);

@@ -73,16 +73,14 @@ export async function removeItem(fetch, host, collectionId, itemId) {
 }
 
 export async function getOpenGraphInfo(fetch, host, url) {
-	try {
-		let res = await fetch(`${host}/api/opengraph/info`, {
-			method: "POST",
-			credentials: "include",
-			body: JSON.stringify({
-				url
-			})
-		});
-		return res;
-	} catch (e) {}
+	let res = await fetch(`${host}/api/opengraph/info`, {
+		method: "POST",
+		credentials: "include",
+		body: JSON.stringify({
+			url
+		})
+	});
+	return res;
 }
 
 export async function validateUser(fetch, host) {

@@ -9,18 +9,18 @@
 
 	async function refresh() {
 		loading = true;
+
 		let res = await getOpenGraphInfo(window.fetch, window.origin, url);
+
 		if (!res.ok) {
 			loading = false;
 			return;
 		}
-		try {
-			let json = await res.json();
-			titleValue = json.title;
-			desc = json.desc;
-		} catch (e) {
-			loading = false;
-		}
+
+		let json = await res.json();
+		titleValue = json.title;
+		desc = json.desc;
+
 		loading = false;
 	}
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/net/html"
 )
 
 type Info struct {
@@ -24,7 +25,7 @@ func parseHtml(stream io.Reader) (*Info, error) {
 	info := Info{}
 
 	title := doc.Find("title").First().Text()
-	info.Title = strings.TrimSpace(title)
+	info.Title = html.UnescapeString(strings.TrimSpace(title))
 
 	node := doc.Find(`meta[property="og:title"]`).First()
 
@@ -33,7 +34,7 @@ func parseHtml(stream io.Reader) (*Info, error) {
 		return &info, nil
 	}
 	if len(v) >= len(info.Title) {
-		info.Title = v
+		info.Title = html.UnescapeString(v)
 	}
 
 	node = doc.Find(`meta[property="og:type"]`).First()
@@ -48,7 +49,8 @@ func parseHtml(stream io.Reader) (*Info, error) {
 	if !exists {
 		return &info, nil
 	}
-	info.Description = strings.ReplaceAll(strings.TrimSpace(v), "\n", "")
+	temp := strings.ReplaceAll(strings.TrimSpace(v), "\n", "")
+	info.Description = html.UnescapeString(temp)
 
 	return &info, nil
 }

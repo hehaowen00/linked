@@ -32,9 +32,38 @@ type Config struct {
 	FrontendHost string `env:"FRONTEND_HOST"`
 }
 
-func main() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+func createSPAHandler(rootDir string) pathrouter.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+		path := ps.Get("*")
 
+		if strings.Contains(path, "..") {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+
+		if len(path) == 0 {
+			path = "index.html"
+		}
+
+		fp := filepath.Join(rootDir, path)
+		f, err := os.OpenFile(fp, os.O_RDONLY, 0777)
+		if err != nil {
+			fp := filepath.Join(rootDir, "index.html")
+			f, err = os.OpenFile(fp, os.O_RDONLY, 0777)
+		}
+
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+
+		contentType := mime.TypeByExtension(filepath.Ext(path))
+		w.Header().Add("Content-Type", contentType)
+		io.Copy(w, f)
+	}
+}
+
+func main() {
 	cfg := Config{}
 
 	err := config.LoadEnv(&cfg)
@@ -71,6 +100,7 @@ func main() {
 	googleAuth.frontendHost = cfg.FrontendHost
 
 	router := pathrouter.NewRouter()
+	router.Use(pathrouter.GzipMiddleware)
 
 	// router.Use(func(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
 	// 	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
@@ -79,35 +109,7 @@ func main() {
 	// 	}
 	// })
 
-	router.Get("/*", func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-		path := ps.Get("*")
-
-		if strings.Contains(path, "..") {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			return
-		}
-
-		if len(path) == 0 {
-			path = "index.html"
-		}
-
-		fp := filepath.Join(cfg.StaticDir + path)
-
-		f, err := os.OpenFile(fp, os.O_RDONLY, 0777)
-		if err != nil {
-			fp := filepath.Join(cfg.StaticDir, "index.html")
-			f, err = os.OpenFile(fp, os.O_RDONLY, 0777)
-		}
-
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			return
-		}
-
-		contentType := mime.TypeByExtension(filepath.Ext(path))
-		w.Header().Add("Content-Type", contentType)
-		io.Copy(w, f)
-	})
+	router.Get("/*", createSPAHandler(cfg.StaticDir))
 
 	router.Group("/auth", func(g *pathrouter.Group) {
 		g.Use(Cors)
@@ -115,7 +117,7 @@ func main() {
 	})
 
 	router.Group("/api", func(g *pathrouter.Group) {
-		g.Use(pathrouter.GzipMiddleware, googleAuth.authMiddleware)
+		g.Use(googleAuth.authMiddleware)
 		initCollectionsApi(appDB, g)
 		initItemsApi(appDB, g)
 		initOpenGraphApi(appDB, g)
