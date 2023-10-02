@@ -158,7 +158,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 			})
 		})
 
-	router.Delete("/collection/:collection/items/:item",
+	router.Delete("/collections/:collection/items/:item",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
 			defer r.Body.Close()
@@ -169,7 +169,7 @@ func initItemsApi(db *sql.DB, router *pathrouter.Group) {
 				UserId:       userId,
 			}
 
-			err := deleteItem(db, &item)
+			err := deleteItemMapping(db, &item)
 			if err != nil {
 				log.Println(err)
 				writeJson(w, http.StatusInternalServerError, JsonResult{

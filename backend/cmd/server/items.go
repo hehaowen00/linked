@@ -161,13 +161,12 @@ func updateItem(db *sql.DB, item *Item) error {
 }
 
 const deleteItemSql = `
-DELETE items
-SET deleted_at = ?
-WHERE id = ? and user_id = ? and deleted_at = 0;
+DELETE FROM item_collection_map
+WHERE user_id = ? and item_id = ? and collection_id = ?;
 `
 
-func deleteItem(db *sql.DB, item *Item) error {
+func deleteItemMapping(db *sql.DB, item *Item) error {
 	item.DeletedAt = time.Now().UTC().UnixMilli()
-	_, err := db.Exec(deleteItemSql, item.DeletedAt, item.ID, item.CollectionId, item.UserId)
+	_, err := db.Exec(deleteItemSql, item.UserId, item.ID, item.CollectionId)
 	return err
 }

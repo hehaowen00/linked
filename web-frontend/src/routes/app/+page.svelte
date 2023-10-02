@@ -12,9 +12,8 @@
 			return;
 		}
 
-		let res = await postCollection(window.fetch, url.origin, name);
+		let res = await postCollection(window.fetch, window.origin, name);
 		if (!res.ok) {
-			console.log(await res.json());
 			return;
 		}
 
@@ -23,19 +22,17 @@
 	}
 
 	async function update(method, collection) {
-		let res = await putCollection(window.fetch, url.origin, method, collection);
+		let res = await putCollection(window.fetch, window.origin, method, collection);
 		if (!res.ok) {
-			console.log(await res.json());
 			return;
 		}
 		await refresh();
 	}
 
 	async function refresh() {
-		let res = await getCollections(window.fetch, url.origin);
+		let res = await getCollections(window.fetch, window.origin);
 		let json = await res.json();
 		if (!res.ok) {
-			console.log(await res.json());
 			return;
 		}
 		collections = json.data;

@@ -9,7 +9,7 @@
 
 	async function refresh() {
 		loading = true;
-		let res = await getOpenGraphInfo(window.fetch, data.url.origin, url);
+		let res = await getOpenGraphInfo(window.fetch, window.origin, url);
 		if (!res.ok) {
 			loading = false;
 			return;
@@ -25,7 +25,7 @@
 	}
 
 	async function updateItem() {
-		let res = await putItem(window.fetch, data.url.origin, {
+		let res = await putItem(window.fetch, window.origin, {
 			id,
 			url,
 			title: titleValue,
@@ -36,10 +36,6 @@
 		if (res.ok) {
 			title = titleValue;
 		}
-	}
-
-	function back() {
-		history.back();
 	}
 
 	function handleTextArea(e) {
@@ -55,7 +51,7 @@
 
 <div class="content">
 	<div class="row">
-		<a href={url} target="_blank">{url}</a>
+		<a class="link" href={url} target="_blank">{url}</a>
 	</div>
 	<p />
 	<!-- <div class="row">Collection</div> -->
@@ -68,7 +64,7 @@
 	<!-- 		<option>Collection 1</option> -->
 	<!-- 	</select> -->
 	<!-- </div> -->
-	<div class="row">Title</div>
+	<div class="row font-semibold">Title</div>
 	<div class="row">
 		<textarea
 			rows={3}
@@ -78,7 +74,7 @@
 			spellcheck="false" />
 	</div>
 	<p />
-	<div class="row">
+	<div class="row font-semibold">
 		<span>Description</span>
 	</div>
 	<div class="row">
@@ -93,6 +89,45 @@
 	<div class="row spaced-left">
 		<button on:click={refresh} disabled={loading}>Refresh</button>
 		<button on:click={updateItem} disabled={loading}>Save</button>
-		<button on:click={back} disabled={loading}>Back</button>
 	</div>
+	<!-- <br /> -->
+	<!-- <div class="row font-semibold">Tags</div> -->
+	<!-- <div class="row spaced-left"> -->
+	<!-- 	<select class="w-100"> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 		<option>Tag 1</option> -->
+	<!-- 	</select> -->
+	<!-- 	<button>Add</button> -->
+	<!-- </div> -->
+	<!-- <div class="row spaced-left"> -->
+	<!-- 	<input type="text" /> -->
+	<!-- 	<button>+</button> -->
+	<!-- </div> -->
+	<!-- <p /> -->
+	<!-- <div class="row"> -->
+	<!-- 	<div> -->
+	<!-- 		<span class="">Tag 1</span> -->
+	<!-- 		<button>X</button> -->
+	<!-- 	</div> -->
+	<!-- 	<div> -->
+	<!-- 		Tag 2 -->
+	<!-- 		<button>X</button> -->
+	<!-- 	</div> -->
+	<!-- 	<div> -->
+	<!-- 		Tag 3 -->
+	<!-- 		<button>X</button> -->
+	<!-- 	</div> -->
+	<!-- 	<div> -->
+	<!-- 		Tag 4 -->
+	<!-- 		<button>X</button> -->
+	<!-- 	</div> -->
+	<!-- </div> -->
 </div>

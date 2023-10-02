@@ -64,7 +64,13 @@ export async function putItem(fetch, host, item) {
 	return res;
 }
 
-export async function removeItem(fetch, host, collectionId, itemId) {}
+export async function removeItem(fetch, host, collectionId, itemId) {
+	let res = await fetch(`${host}/api/collections/${collectionId}/items/${itemId}`, {
+		method: "DELETE",
+		credentials: "include"
+	});
+	return res;
+}
 
 export async function getOpenGraphInfo(fetch, host, url) {
 	try {

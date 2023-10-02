@@ -1,9 +1,12 @@
 <script>
 	import { goto } from "$app/navigation";
+	import { removeItem } from "../api";
 	import { displayTimestamp } from "../util";
 
 	export let canEdit = true;
 	export let item;
+	export let collectionId;
+	export let refresh;
 
 	let { id, url, title, desc, created_at } = item;
 	let copied = false;
@@ -19,6 +22,14 @@
 		}, 500);
 	}
 
+	async function remove() {
+		let res = await removeItem(window.fetch, window.origin, collectionId, id);
+		if (!res.ok) {
+			return;
+		}
+		await refresh();
+	}
+
 	function editItem() {
 		goto(`/app/bookmarks/item/${id}/edit`);
 	}
@@ -26,7 +37,7 @@
 
 <div class="item">
 	<div class="row">
-		<a href={url} target="_blank">
+		<a class="break-word" href={url} target="_blank">
 			{title}
 		</a>
 	</div>
@@ -45,7 +56,7 @@
 
 		{#if canEdit}
 			<button on:click={editItem}>View</button>
-			<button>Remove</button>
+			<button on:click={remove}>Remove</button>
 		{/if}
 	</div>
 	<br />

@@ -30,7 +30,7 @@
 		<input type="text" placeholder="Name" bind:value={name} />
 	</div>
 	<p />
-	<div class="row">
+	<div class="row spaced-left">
 		<button on:click={saveCollection}> Save </button>
 		<button on:click={cancel}> Cancel </button>
 	</div>

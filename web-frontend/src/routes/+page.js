@@ -17,8 +17,4 @@ export async function load({ fetch, url }) {
 	if (res.ok) {
 		throw redirect(302, "/app");
 	}
-
-	return {
-		url
-	};
 }

@@ -4,7 +4,6 @@ export function checkValidUrl(url) {
 		testUrl = new URL(url);
 		return true;
 	} catch (e) {
-		console.log("invalid url", url);
 		return false;
 	}
 }

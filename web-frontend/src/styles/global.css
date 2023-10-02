@@ -17,7 +17,6 @@ a:hover {
 }
 
 button {
-	width: 100%;
 	align-items: center;
 	font-size: 0.8rem;
 }
@@ -69,6 +68,7 @@ textarea {
 	flex-direction: row;
 	flex: 1;
 	font-size: 0.9rem;
+	resize: none;
 }
 
 #main-content {
@@ -170,6 +170,14 @@ textarea {
 
 .w-100 {
 	width: 100%;
+}
+
+.font-sm {
+	font-size: 0.85rem;
+}
+
+.break-word {
+	word-break: break-word;
 }
 
 @media (min-width: 640px) {

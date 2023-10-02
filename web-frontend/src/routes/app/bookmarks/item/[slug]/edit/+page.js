@@ -12,7 +12,6 @@ export async function load({ fetch, url, params }) {
 	let json = await res.json();
 
 	return {
-		item: json.data,
-		url
+		item: json.data
 	};
 }

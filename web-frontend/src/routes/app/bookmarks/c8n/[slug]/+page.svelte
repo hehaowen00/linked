@@ -7,7 +7,7 @@
 	export let data;
 	let collection = data.collection ?? {};
 	let items = data.items ?? [];
-	let { name, deleted_at } = collection;
+	let { id, name, deleted_at } = collection;
 
 	let url = "";
 	let opengraphInfo = { ...defaultOpenGraph };
@@ -32,18 +32,14 @@
 		}
 
 		try {
-			let res = await getOpenGraphInfo(window.fetch, data.url.origin, url);
+			let res = await getOpenGraphInfo(window.fetch, window.origin, url);
 			if (res.redirected) {
 				goto(res.url);
 			}
 			if (res.ok) {
 				opengraphInfo = await res.json();
-			} else {
-				console.log("error", await res.json());
 			}
-		} catch (e) {
-			console.log(e);
-		}
+		} catch (e) {}
 	}
 
 	$: url && fetchOpenGraph(url);
@@ -52,13 +48,13 @@
 		if (!checkValidUrl(url) || opengraphInfo.title == "") {
 			return;
 		}
-		let res = await postItem(window.fetch, data.url.origin, collection.id, {
+		let res = await postItem(window.fetch, window.origin, collection.id, {
 			url,
 			title: opengraphInfo.title,
 			desc: opengraphInfo.desc
 		});
 		if (!res.ok) {
-			console.log(await res.json());
+			return;
 		}
 
 		url = "";
@@ -68,7 +64,7 @@
 	}
 
 	async function refresh() {
-		let res = await getItems(window.fetch, data.url.origin, collection.id);
+		let res = await getItems(window.fetch, window.origin, collection.id);
 		items = await res.json();
 	}
 </script>
@@ -92,7 +88,7 @@
 			<input type="text" placeholder="Title" bind:value={opengraphInfo.title} />
 		</div>
 		<div class="row">
-			<input type="text" placeholder="Description" bind:value={opengraphInfo.description} />
+			<input type="text" placeholder="Description" bind:value={opengraphInfo.desc} />
 		</div>
 		<div class="row">
 			<div class="col">
@@ -111,7 +107,7 @@
 {#if deleted_at === 0 || items.length > 0}
 	{#each items as item}
 		{#key item}
-			<Item canEdit={deleted_at === 0} {item} />
+			<Item canEdit={deleted_at === 0} {item} collectionId={id} {refresh} />
 		{/key}
 	{/each}
 {:else}
