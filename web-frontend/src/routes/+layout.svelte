@@ -1,6 +1,6 @@
 <script>
-	import DeleteDialog from "../components/deleteDialog.svelte";
-	import { colorScheme } from "../stores";
+	import DeleteDialog from "$components/deleteDialog.svelte";
+	import { colorScheme } from "$lib/stores";
 
 	import "../styles/normalize.css";
 	import "../styles/global.css";

@@ -1,5 +1,5 @@
 <script>
-	import { loginUrl } from "../api";
+	import { loginUrl } from "$lib/api";
 </script>
 
 <div class="main col text-center">

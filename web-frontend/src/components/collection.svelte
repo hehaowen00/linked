@@ -1,6 +1,6 @@
 <script>
 	import { goto } from "$app/navigation";
-	import { dialogStore } from "../stores";
+	import { dialogStore } from "$lib/stores";
 
 	export let collection;
 	export let update;

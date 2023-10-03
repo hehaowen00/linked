@@ -1,5 +1,5 @@
 <script>
-	import { getOpenGraphInfo, putItem } from "../../../../../../api.js";
+	import { getOpenGraphInfo, putItem } from "$lib/api.js";
 
 	export let data;
 	let { item } = data;

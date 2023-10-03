@@ -1,6 +1,6 @@
 <script>
 	import { goto } from "$app/navigation";
-	import { putCollection } from "../../../../../../api.js";
+	import { putCollection } from "$lib/api.js";
 
 	export let data;
 

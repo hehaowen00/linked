@@ -1,5 +1,5 @@
 <script>
-	import { dialogStore } from "../stores";
+	import { dialogStore } from "$lib/stores";
 
 	let dialog;
 	let type = "";

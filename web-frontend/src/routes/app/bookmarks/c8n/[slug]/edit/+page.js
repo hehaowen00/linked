@@ -1,4 +1,4 @@
-import { getCollectionById } from "../../../../../../api";
+import { getCollectionById } from "$lib/api";
 
 export const ssr = false;
 export const prerender = false;

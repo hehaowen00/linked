@@ -1,6 +1,6 @@
 <script>
-	import { getCollections, putCollection, postCollection } from "../../api.js";
-	import Collection from "../../components/collection.svelte";
+	import { getCollections, putCollection, postCollection } from "$lib/api.js";
+	import Collection from "$components/collection.svelte";
 
 	export let data;
 	let { collections, url } = data;

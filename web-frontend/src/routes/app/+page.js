@@ -1,4 +1,4 @@
-import { getCollections } from "../../api";
+import { getCollections } from "$lib/api";
 
 export const ssr = false;
 

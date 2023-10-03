@@ -1,8 +1,8 @@
 <script>
-	import Item from "../../../../../components/item.svelte";
-	import { getItems, getOpenGraphInfo, postItem } from "../../../../../api.js";
-	import { defaultOpenGraph } from "../../../../../constants.js";
-	import { checkValidUrl } from "../../../../../util.js";
+	import Item from "$components/item.svelte";
+	import { getItems, getOpenGraphInfo, postItem } from "$lib/api.js";
+	import { defaultOpenGraph } from "$lib/constants.js";
+	import { checkValidUrl } from "$lib/util.js";
 
 	export let data;
 	let collection = data.collection ?? {};

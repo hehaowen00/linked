@@ -1,6 +1,6 @@
 <script>
-	import { logoutUrl } from "../api";
-	import { colorScheme } from "../stores";
+	import { logoutUrl } from "$lib/api";
+	import { colorScheme } from "$lib/stores";
 	export let url;
 
 	let theme;

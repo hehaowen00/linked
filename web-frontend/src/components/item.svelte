@@ -1,7 +1,7 @@
 <script>
 	import { goto } from "$app/navigation";
-	import { removeItem } from "../api";
-	import { displayTimestamp } from "../util";
+	import { removeItem } from "$lib/api";
+	import { displayTimestamp } from "$lib/util";
 
 	export let canEdit = true;
 	export let item;
@@ -30,8 +30,8 @@
 		await refresh();
 	}
 
-	function editItem() {
-		goto(`/app/bookmarks/item/${id}/edit`);
+	function viewItem() {
+		goto(`/app/bookmarks/item/${id}`);
 	}
 </script>
 
@@ -55,7 +55,7 @@
 		</button>
 
 		{#if canEdit}
-			<button on:click={editItem}>View</button>
+			<button on:click={viewItem}>View</button>
 			<button on:click={remove}>Remove</button>
 		{/if}
 	</div>

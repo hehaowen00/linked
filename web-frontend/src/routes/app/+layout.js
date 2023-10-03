@@ -1,5 +1,5 @@
 import { redirect } from "@sveltejs/kit";
-import { loginUrl, validateUser } from "../../api";
+import { loginUrl, validateUser } from "$lib/api";
 
 export const prerender = true;
 

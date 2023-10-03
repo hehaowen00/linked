@@ -1,7 +1,7 @@
 export const ssr = false;
 export const prerender = false;
 
-import { getCollectionById, getItems } from "../../../../../api";
+import { getCollectionById, getItems } from "$lib/api";
 
 export async function load({ fetch, url, params }) {
 	let slug = params.slug;
