@@ -6,7 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/goccy/go-json v0.10.2
 	github.com/google/uuid v1.3.1
-	github.com/hehaowen00/path-router v0.0.0-20230927114610-9dfacb9bd9e0
+	github.com/hehaowen00/path-router v0.0.0-20231003110152-2c299ed95774
 	github.com/mattn/go-sqlite3 v1.14.17
 	golang.org/x/oauth2 v0.12.0
 )

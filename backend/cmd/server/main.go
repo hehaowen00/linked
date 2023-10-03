@@ -57,31 +57,25 @@ func main() {
 
 	router := pathrouter.NewRouter()
 	router.Use(pathrouter.GzipMiddleware)
-
 	router.Get("/*", createSPAHandler(cfg.StaticDir))
 
-	router.Group("/auth", func(g *pathrouter.Group) {
-		g.Use(cors)
-		initAuthApi(authDB, googleAuth, g)
-	})
+	authScope := router.Scope("/auth")
 
-	router.Group("/api", func(g *pathrouter.Group) {
-		g.Use(googleAuth.authMiddleware)
-		initCollectionsApi(appDB, g)
-		initItemsApi(appDB, g)
-		initOpenGraphApi(appDB, g)
-	})
+	var cors pathrouter.CorsHandler
+	cors.AllowCredentials = true
+	authScope.Use(cors.Middleware)
+
+	initAuthApi(authDB, googleAuth, authScope)
+
+	apiScope := router.Scope("/api")
+	apiScope.Use(googleAuth.authMiddleware)
+
+	initCollectionsApi(appDB, apiScope)
+	initItemsApi(appDB, apiScope)
+	initOpenGraphApi(appDB, apiScope)
 
 	log.Println("starting server at", cfg.Host)
 	log.Fatalln(http.ListenAndServe(cfg.Host, router))
-}
-
-func cors(next pathrouter.HandlerFunc) pathrouter.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		next(w, r, ps)
-	}
 }
 
 func createSPAHandler(rootDir string) pathrouter.HandlerFunc {

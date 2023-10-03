@@ -13,11 +13,11 @@ type urlRequest struct {
 	Url string `json:"url"`
 }
 
-func initOpenGraphApi(db *sql.DB, router *pathrouter.Group) {
+func initOpenGraphApi(db *sql.DB, scope pathrouter.IRoutes) {
 	ogw, queue := opengraph.NewWorker()
 	go ogw.Run()
 
-	router.Post(
+	scope.Post(
 		"/opengraph/info",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			urlReq := urlRequest{}

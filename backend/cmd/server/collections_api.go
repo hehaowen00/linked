@@ -10,8 +10,8 @@ import (
 	pathrouter "github.com/hehaowen00/path-router"
 )
 
-func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
-	router.Get("/collections",
+func initCollectionsApi(db *sql.DB, scope pathrouter.IRoutes) {
+	scope.Get("/collections",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
 			defer r.Body.Close()
@@ -32,7 +32,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 			})
 		})
 
-	router.Get("/collections/:collection",
+	scope.Get("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
 			defer r.Body.Close()
@@ -58,7 +58,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 			})
 		})
 
-	router.Post("/collections",
+	scope.Post("/collections",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
 			defer r.Body.Close()
@@ -102,7 +102,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 			})
 		})
 
-	router.Put("/collections/:collection",
+	scope.Put("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
 			defer r.Body.Close()
@@ -144,7 +144,7 @@ func initCollectionsApi(db *sql.DB, router *pathrouter.Group) {
 			})
 		})
 
-	router.Delete("/collections/:collection",
+	scope.Delete("/collections/:collection",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
 			defer r.Body.Close()

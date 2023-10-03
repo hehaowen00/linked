@@ -18,12 +18,12 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-func initAuthApi(db *sql.DB, auth *GoogleAuth, router *pathrouter.Group) {
-	router.Get("/login", auth.login)
-	router.Get("/callback", auth.handleCallback)
-	router.Get("/validate", auth.ValidateToken)
-	router.Get("/logout", auth.logout)
-	router.Get("/profile", auth.getProfile)
+func initAuthApi(db *sql.DB, auth *GoogleAuth, scope pathrouter.IRoutes) {
+	scope.Get("/login", auth.login)
+	scope.Get("/callback", auth.handleCallback)
+	scope.Get("/validate", auth.ValidateToken)
+	scope.Get("/logout", auth.logout)
+	scope.Get("/profile", auth.getProfile)
 }
 
 type GoogleAuth struct {
@@ -57,10 +57,6 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 		accessToken, err := r.Cookie(constants.AccessTokenKey)
 		if err != nil {
 			log.Println("no access token", err)
-			// writeJson(w, http.StatusUnauthorized, JsonResult{
-			// 	Status: "error",
-			// 	Error:  "missing access token",
-			// })
 			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
@@ -75,10 +71,6 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 		}
 
 		if response.StatusCode != 200 {
-			// writeJson(w, http.StatusUnauthorized, JsonResult{
-			// 	Status: "error",
-			// 	Error:  err.Error(),
-			// })
 			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
@@ -86,10 +78,6 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 		contents, err := io.ReadAll(response.Body)
 		if err != nil {
 			log.Println(err)
-			// writeJson(w, http.StatusInternalServerError, JsonResult{
-			// 	Status: "error",
-			// 	Error:  err.Error(),
-			// })
 			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
@@ -99,20 +87,12 @@ func (auth *GoogleAuth) authMiddleware(next pathrouter.HandlerFunc) pathrouter.H
 		err = json.Unmarshal(contents, &info)
 		if err != nil {
 			log.Println(err)
-			// writeJson(w, http.StatusInternalServerError, JsonResult{
-			// 	Status: "error",
-			// 	Error:  err.Error(),
-			// })
 			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
 
 		if info.Audience != auth.config.ClientID {
 			log.Println("incorrect audience")
-			// writeJson(w, http.StatusUnauthorized, JsonResult{
-			// 	Status: "error",
-			// 	Error:  "audience does not match",
-			// })
 			http.Redirect(w, r, auth.frontendHost, http.StatusTemporaryRedirect)
 			return
 		}
@@ -312,6 +292,7 @@ func (auth *GoogleAuth) ValidateToken(
 
 	writeJson(w, http.StatusOK, JsonResult{
 		Status: "ok",
+		Data:   tokenInfo,
 	})
 }
 
