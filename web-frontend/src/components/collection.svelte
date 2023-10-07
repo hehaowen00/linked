@@ -12,7 +12,7 @@
 	}
 
 	function gotoEdit() {
-		goto(`/app/bookmarks/c8n/${id}/edit`);
+		goto(`/app/bookmarks/c9s/${id}/edit`);
 	}
 
 	async function unarchive() {
@@ -41,7 +41,7 @@
 
 <div class="collection">
 	<div class="row">
-		<a href="/app/bookmarks/c8n/{id}">{name}</a>
+		<a href="/app/bookmarks/c9s/{id}">{name}</a>
 	</div>
 	{#if deleted_at == 0}
 		<div class="row spaced-left">

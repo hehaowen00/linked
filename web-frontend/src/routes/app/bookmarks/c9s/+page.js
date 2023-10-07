@@ -1,14 +1,14 @@
-import { getItems } from "$lib/api";
+import { getCollections } from "$lib/api";
 
 export const ssr = false;
 
 export async function load({ fetch, url }) {
-	let res = await getItems(fetch, url.origin);
+	let res = await getCollections(fetch, url.origin);
 	if (!res.ok) {
 		return;
 	}
 	let json = await res.json();
 	return {
-		items: json.data ?? []
+		collections: json.data ?? []
 	};
 }

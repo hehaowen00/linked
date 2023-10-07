@@ -6,7 +6,11 @@ export const dialogStore = writable({
 	cb: function () {}
 });
 
-export const colorScheme = writable(localStorage.getItem("theme") ?? "light");
+export const colorScheme = writable("light");
+
+if (browser) {
+	// writable.s(localStorage.getItem("theme") ?? "light");
+}
 
 colorScheme.subscribe((theme) => {
 	if (browser) {

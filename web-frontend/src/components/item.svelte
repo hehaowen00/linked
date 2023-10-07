@@ -31,7 +31,7 @@
 	}
 
 	function viewItem() {
-		goto(`/app/bookmarks/item/${id}`);
+		goto(`/app/bookmarks/items/${id}`);
 	}
 </script>
 

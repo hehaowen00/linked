@@ -19,7 +19,7 @@ type Item struct {
 	DeletedAt    int64  `json:"deleted"`
 }
 
-const getItemsSql = `
+const getItemsByCollectionSql = `
 SELECT id, url, title, description, created_at
 FROM items
 INNER JOIN item_collection_map
@@ -28,10 +28,10 @@ WHERE collection_id = ? AND items.user_id = $2
 ORDER BY title ASC;
 `
 
-func getItems(db *sql.DB, collectionId, userId string) ([]*Item, error) {
+func getItemsByCollection(db *sql.DB, collectionId, userId string) ([]*Item, error) {
 	var items []*Item
 
-	rows, err := db.Query(getItemsSql, collectionId, userId)
+	rows, err := db.Query(getItemsByCollectionSql, collectionId, userId)
 
 	if err != nil {
 		return nil, err
@@ -54,15 +54,61 @@ func getItems(db *sql.DB, collectionId, userId string) ([]*Item, error) {
 	return items, nil
 }
 
+const getItemCountSql = `
+SELECT count(id)
+FROM items
+WHERE user_id = ?;
+`
+
+func getItemsCount(db *sql.DB, userId string) (int, error) {
+	var count int
+
+	row := db.QueryRow(getItemCountSql, userId)
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+const getItemsSql = `
+SELECT id, title, url, description, created_at, deleted_at
+FROM items
+WHERE user_id = ?
+ORDER BY created_at DESC;
+`
+
+func getItems(db *sql.DB, userId string) ([]*Item, error) {
+	var items []*Item
+
+	rows, err := db.Query(getItemsSql, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		item := Item{}
+		err := rows.Scan(&item.ID, &item.Title, &item.URL, &item.Description, &item.CreatedAt, &item.DeletedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, &item)
+	}
+
+	return items, nil
+}
+
 const getItemSql = `
-SELECT title, url, description, created_at
+SELECT url, title, description, created_at
 FROM items
 WHERE id = ? and user_id = ? and deleted_at = 0;
 `
 
 func getItem(db *sql.DB, item *Item) error {
 	row := db.QueryRow(getItemSql, item.ID, item.UserId)
-	err := row.Scan(&item.Title, &item.URL, &item.Description, &item.CreatedAt)
+	err := row.Scan(&item.URL, &item.Title, &item.Description, &item.CreatedAt)
 	return err
 }
 
@@ -84,31 +130,20 @@ func getItemByUrl(db *sql.DB, item *Item) (bool, error) {
 }
 
 const createItemSql = `
-INSERT INTO items (id, user_id, title, url, description, created_at)
+INSERT INTO items (id, user_id, url, title, description, created_at)
 VALUES (?, ?, ?, ?, ?, ?);
-`
-
-const addItemCollectionSql = `
-INSERT INTO item_collection_map (user_id, collection_id, item_id)
-VALUES (?, ?, ?);
 `
 
 func createItem(db *sql.DB, item *Item) error {
 	item.ID = uuid.NewString()
 	item.CreatedAt = time.Now().UTC().UnixMilli()
 
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	_, err = tx.Exec(
+	_, err := db.Exec(
 		createItemSql,
 		item.ID,
 		item.UserId,
-		item.Title,
 		item.URL,
+		item.Title,
 		item.Description,
 		item.CreatedAt,
 	)
@@ -117,20 +152,13 @@ func createItem(db *sql.DB, item *Item) error {
 		return err
 	}
 
-	_, err = tx.Exec(
-		addItemCollectionSql,
-		item.UserId,
-		item.CollectionId,
-		item.ID,
-	)
-	if err != nil {
-		return err
-	}
-
-	err = tx.Commit()
-
 	return err
 }
+
+const addItemCollectionSql = `
+INSERT INTO item_collection_map (user_id, collection_id, item_id)
+VALUES (?, ?, ?);
+`
 
 func addItemToCollection(db *sql.DB, item *Item) error {
 	_, err := db.Exec(
@@ -160,13 +188,13 @@ func updateItem(db *sql.DB, item *Item) error {
 	return err
 }
 
-const deleteItemSql = `
+const deleteItemMappingSql = `
 DELETE FROM item_collection_map
 WHERE user_id = ? and item_id = ? and collection_id = ?;
 `
 
 func deleteItemMapping(db *sql.DB, item *Item) error {
 	item.DeletedAt = time.Now().UTC().UnixMilli()
-	_, err := db.Exec(deleteItemSql, item.UserId, item.ID, item.CollectionId)
+	_, err := db.Exec(deleteItemMappingSql, item.UserId, item.ID, item.CollectionId)
 	return err
 }

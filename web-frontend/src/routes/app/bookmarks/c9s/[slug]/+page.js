@@ -1,7 +1,7 @@
 export const ssr = false;
 export const prerender = false;
 
-import { getCollectionById, getItems } from "$lib/api";
+import { getCollectionById, getItemsByCollection } from "$lib/api";
 
 export async function load({ fetch, url, params }) {
 	let slug = params.slug;
@@ -10,7 +10,7 @@ export async function load({ fetch, url, params }) {
 	let resp = await res.json();
 	let collection = resp.data;
 
-	res = await getItems(fetch, url.origin, slug);
+	res = await getItemsByCollection(fetch, url.origin, slug);
 	let items = await res.json();
 
 	return {

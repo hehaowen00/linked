@@ -21,7 +21,16 @@
 </script>
 
 <div class="row">
-	<a href="/app">Home</a>
+	<div class="row">
+		<a href="/">Linked</a>
+	</div>
+	<div class="collapse-btn ml-auto">
+		<a href="#">Menu</a>
+	</div>
+	<div class="row spaced-left ml-1">
+		<a href="/app/">Bookmarks</a>
+		<a href="/app/bookmarks/c9s">Collections</a>
+	</div>
 	<div class="row ml-auto spaced-left">
 		<select on:change={setTheme} bind:value={theme}>
 			<option value="dark">Dark Mode</option>

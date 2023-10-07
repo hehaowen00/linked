@@ -15,7 +15,7 @@ func initItemsApi(db *sql.DB, scope pathrouter.IRoutes) {
 			userId := r.Context().Value(constants.AuthKey).(string)
 			defer r.Body.Close()
 
-			items, err := getItems(db, ps.Get("collection"), userId)
+			items, err := getItemsByCollection(db, ps.Get("collection"), userId)
 			if err != nil {
 				log.Println(err)
 				writeJson(w, http.StatusInternalServerError, JsonResult{
@@ -26,6 +26,27 @@ func initItemsApi(db *sql.DB, scope pathrouter.IRoutes) {
 			}
 
 			writeJson(w, http.StatusOK, items)
+		})
+
+	scope.Get("/items",
+		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+			userId := r.Context().Value(constants.AuthKey).(string)
+			defer r.Body.Close()
+
+			items, err := getItems(db, userId)
+			if err != nil {
+				log.Println(err)
+				writeJson(w, http.StatusInternalServerError, JsonResult{
+					Status: "error",
+					Error:  err.Error(),
+				})
+				return
+			}
+
+			writeJson(w, http.StatusOK, JsonResult{
+				Status: "ok",
+				Data:   items,
+			})
 		})
 
 	scope.Get("/items/:item",
@@ -54,14 +75,13 @@ func initItemsApi(db *sql.DB, scope pathrouter.IRoutes) {
 			})
 		})
 
-	scope.Post("/collections/:collection/items",
+	scope.Post("/items",
 		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 			userId := r.Context().Value(constants.AuthKey).(string)
 			defer r.Body.Close()
 
 			item := Item{
-				CollectionId: ps.Get("collection"),
-				UserId:       userId,
+				UserId: userId,
 			}
 
 			err := readJson(r.Body, &item)
@@ -156,6 +176,10 @@ func initItemsApi(db *sql.DB, scope pathrouter.IRoutes) {
 				Status: "ok",
 				Data:   item,
 			})
+		})
+
+	scope.Delete("/items",
+		func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 		})
 
 	scope.Delete("/collections/:collection/items/:item",

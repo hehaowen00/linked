@@ -32,8 +32,15 @@ export async function putCollection(fetch, host, method, collection) {
 	return res;
 }
 
-export async function getItems(fetch, host, id) {
+export async function getItemsByCollection(fetch, host, id) {
 	let res = await fetch(`${host}/api/collections/${id}/items`, {
+		credentials: "include"
+	});
+	return res;
+}
+
+export async function getItems(fetch, host) {
+	let res = await fetch(`${host}/api/items`, {
 		credentials: "include"
 	});
 	return res;
@@ -46,8 +53,8 @@ export async function getItemById(fetch, host, id) {
 	return res;
 }
 
-export async function postItem(fetch, host, collectionId, payload) {
-	let res = await fetch(`${host}/api/collections/${collectionId}/items`, {
+export async function postItem(fetch, host, payload) {
+	let res = await fetch(`${host}/api/items`, {
 		method: "POST",
 		credentials: "include",
 		body: JSON.stringify(payload)
@@ -64,8 +71,8 @@ export async function putItem(fetch, host, item) {
 	return res;
 }
 
-export async function removeItem(fetch, host, collectionId, itemId) {
-	let res = await fetch(`${host}/api/collections/${collectionId}/items/${itemId}`, {
+export async function removeItem(fetch, host, itemId) {
+	let res = await fetch(`${host}/api/items/${itemId}`, {
 		method: "DELETE",
 		credentials: "include"
 	});

@@ -1,12 +1,7 @@
 <script>
-	import Item from "$components/item.svelte";
 	import { getItems, getOpenGraphInfo, postItem } from "$lib/api.js";
 	import { defaultOpenGraph } from "$lib/constants.js";
 	import { checkValidUrl } from "$lib/util.js";
-
-	export let data;
-	let { items } = data;
-	let category = "all";
 
 	let url = "";
 	let opengraphInfo = { ...defaultOpenGraph };
@@ -45,7 +40,7 @@
 		if (!checkValidUrl(url) || opengraphInfo.title == "") {
 			return;
 		}
-		let res = await postItem(window.fetch, window.origin, {
+		let res = await postItem(window.fetch, window.origin, collection.id, {
 			url,
 			title: opengraphInfo.title,
 			desc: opengraphInfo.desc
@@ -60,26 +55,11 @@
 		await refresh();
 	}
 
-	async function update(method, collection) {
-		// let res = await putCollection(window.fetch, window.origin, method, collection);
-		// if (!res.ok) {
-		// 	return;
-		// }
-		await refresh();
-	}
-
 	async function refresh() {
-		let res = await getItems(window.fetch, window.origin);
-		let json = await res.json();
-		if (!res.ok) {
-			return;
-		}
-		collections = json.data;
+		let res = await getItems(window.fetch, window.origin, collection.id);
+		items = await res.json();
 	}
 </script>
-
-<h1>Bookmarks</h1>
-<p />
 
 <div class="content">
 	<div class="row">
@@ -87,7 +67,7 @@
 	</div>
 	{#if url}
 		<div class="row" style="font-size: 0.9rem;">
-			<a class="link" href={url} target="_blank">
+			<a class="link" href={url}>
 				{url}
 			</a>
 		</div>
@@ -110,17 +90,3 @@
 	</div>
 </div>
 <br />
-
-<div class="row">
-	<select class="w-100" bind:value={category}>
-		<option value="all" selected>All</option>
-		<option value="deleted">Archived</option>
-	</select>
-</div>
-<br />
-
-{#if category == "all"}
-	{#each items as item}
-		<Item {item} />
-	{/each}
-{/if}
