@@ -94,7 +94,7 @@ textarea {
 	margin-right: auto;
 }
 
-.main {
+.main, #main {
 	margin: 0 auto;
 	padding-left: 0.5rem;
 	padding-right: 0.5rem;
@@ -155,8 +155,16 @@ textarea {
 	margin-top: 0.25rem;
 }
 
+.spaced-top-2 > * + * {
+	margin-top: 0.5rem;
+}
+
 .col + .col {
 	margin-left: 5px;
+}
+
+.col-md {
+	width: 100%;
 }
 
 .mv-auto {
@@ -180,6 +188,31 @@ textarea {
 	word-break: break-word;
 }
 
+.toast {
+  background-color: #dc2626;
+	border-radius: 3px;
+	border: 1px solid #dc2626;
+	display: flex;
+	font-size: 0.9rem;
+  position: fixed;
+  bottom: 10%;
+  left: 50%;
+	padding: 0.5rem 0.75rem;
+	text-align: center;
+  transform: translate(-50%, -50%);
+	user-select: none;
+	width: 250px;
+  z-index: 1;
+}
+
+.collapse-menu {
+	display: none;
+}
+
+.ml-1 {
+	margin-left: 0.5rem;
+}
+
 @media (min-width: 640px) {
 	button {
 		width: auto;
@@ -188,5 +221,13 @@ textarea {
 	.col-xs {
 		width: calc(100% / 12);
 		max-width: calc(100% / 12);
+	}
+
+	.collapse-btn {
+		display: none;
+	}
+
+	.col-md {
+		width: 30%;
 	}
 }

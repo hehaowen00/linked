@@ -26,7 +26,6 @@
 	<title>Linked</title>
 </svelte:head>
 
-<div id="main-content">
-	<DeleteDialog />
+<div class="main">
 	<slot />
 </div>
