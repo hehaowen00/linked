@@ -2,7 +2,11 @@ package main
 
 import (
 	"io"
+	"linked/auth"
+	"linked/collections"
 	"linked/internal/config"
+	"linked/items"
+	"linked/opengraph"
 	"log"
 	"mime"
 	"net/http"
@@ -15,6 +19,7 @@ import (
 )
 
 type Config struct {
+	AppName   string `env:"APP_NAME"`
 	Host      string `env:"HOST"`
 	StaticDir string `env:"STATIC_DIR"`
 
@@ -23,12 +28,7 @@ type Config struct {
 
 	AuthDBPath       string `env:"AUTH_DATABASE"`
 	AuthDBMigrations string `env:"AUTH_MIGRATIONS"`
-
-	GoogleClientID     string `env:"GOOGLE_CLIENT_ID"`
-	GoogleClientSecret string `env:"GOOGLE_CLIENT_SECRET"`
-
-	AuthHost     string `env:"AUTH_HOST"`
-	FrontendHost string `env:"FRONTEND_HOST"`
+	AuthSecret       string `env:"AUTH_SECRET"`
 }
 
 func main() {
@@ -52,30 +52,52 @@ func main() {
 		return
 	}
 
-	googleAuth := newGoogleAuth(cfg.AuthHost, cfg.GoogleClientID, cfg.GoogleClientSecret, authDB)
-	googleAuth.frontendHost = cfg.FrontendHost
-
 	router := pathrouter.NewRouter()
 	router.Use(pathrouter.GzipMiddleware)
+
+	var cors pathrouter.CorsHandler
+	cors.AllowCredentials = true
+	router.Use(cors.Middleware)
+
+	router.Get("/app", serveIndexHtml(cfg.StaticDir))
+	router.Get("/app/*", serveIndexHtml(cfg.StaticDir))
 	router.Get("/*", createSPAHandler(cfg.StaticDir))
 
 	authScope := router.Scope("/auth")
 
-	var cors pathrouter.CorsHandler
-	cors.AllowCredentials = true
-	authScope.Use(cors.Middleware)
-
-	initAuthApi(authDB, googleAuth, authScope)
+	authApi := auth.NewAPI(authDB, "secret")
+	authApi.Bind(authScope)
 
 	apiScope := router.Scope("/api")
-	apiScope.Use(googleAuth.authMiddleware)
+	apiScope.Use(authApi.Middleware)
 
-	initCollectionsApi(appDB, apiScope)
-	initItemsApi(appDB, apiScope)
-	initOpenGraphApi(appDB, apiScope)
+	collectionsApi := collections.NewAPI(appDB)
+	collectionsApi.Bind(apiScope)
+	authApi.SetCollectionsApi(collectionsApi)
+
+	itemsApi := items.NewAPI(appDB)
+	itemsApi.Bind(apiScope)
+
+	opengraph.InitOpenGraphApi(appDB, apiScope)
 
 	log.Println("starting server at", cfg.Host)
-	log.Fatalln(http.ListenAndServe(cfg.Host, router))
+	log.Fatalln(http.ListenAndServeTLS(cfg.Host, "server.crt", "server.key", router))
+}
+
+func serveIndexHtml(rootDir string) pathrouter.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+		fp := filepath.Join(rootDir, "index.html")
+		f, err := os.OpenFile(fp, os.O_RDONLY, 0777)
+
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+
+		contentType := mime.TypeByExtension(filepath.Ext("index.html"))
+		w.Header().Add("Content-Type", contentType)
+		io.Copy(w, f)
+	}
 }
 
 func createSPAHandler(rootDir string) pathrouter.HandlerFunc {

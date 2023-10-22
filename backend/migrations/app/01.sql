@@ -20,8 +20,3 @@ create table items (
     primary key (id),
     unique (user_id, url)
 );
-
-create table if not exists profiles (
-    id text not null,
-    primary key (id)
-);

@@ -1,5 +1,7 @@
 package constants
 
+const AppName = "Linked"
+
 const AccessTokenKey = "access_token"
 
 const RedirectUrlKey = "redirect_url"

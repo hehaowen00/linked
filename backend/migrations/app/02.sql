@@ -30,13 +30,11 @@ create table item_collection_map (
     user_id text not null,
     collection_id text not null,
     item_id text not null,
-    primary key (user_id, collection_id, item_id)
+    primary key (user_id, collection_id, item_id),
 );
 
 insert into item_collection_map (user_id, collection_id, item_id)
 select user_id, collection_id, id
 from items_backup;
-
-drop table profiles;
 
 drop table items_backup;
