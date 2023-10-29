@@ -81,7 +81,18 @@ func main() {
 	opengraph.InitOpenGraphApi(appDB, apiScope)
 
 	log.Println("starting server at", cfg.Host)
+	go func() {
+		http.HandleFunc("/", redirectToHTTPS)
+		log.Fatalln(http.ListenAndServe(":80", nil))
+	}()
 	log.Fatalln(http.ListenAndServeTLS(cfg.Host, "server.crt", "server.key", router))
+}
+
+func redirectToHTTPS(w http.ResponseWriter, r *http.Request) {
+	if r.TLS == nil {
+		http.Redirect(w, r, "https://"+r.Host+r.URL.RequestURI(), http.StatusFound)
+		return
+	}
 }
 
 func serveIndexHtml(rootDir string) pathrouter.HandlerFunc {

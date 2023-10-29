@@ -9,6 +9,7 @@ import {
 } from "solid-bootstrap";
 import Header from "../components/Header";
 import { createEffect, createSignal, For } from "solid-js";
+import api from "../lib/api";
 
 export default function Collections() {
   let [showAlert, setAlert] = createSignal("");
@@ -22,9 +23,7 @@ export default function Collections() {
   };
 
   let getCollections = async () => {
-    let res = await fetch("https://localhost:8000/api/collections", {
-      credentials: "include",
-    });
+    let res = await api.getCollections();
     if (!res.ok) {
     }
     let json = await res.json();
@@ -37,13 +36,7 @@ export default function Collections() {
   let addCollection = async (e) => {
     e.preventDefault();
 
-    let res = await fetch("https://localhost:8000/api/collections", {
-      method: "POST",
-      credentials: "include",
-      body: JSON.stringify({
-        ...collection(),
-      }),
-    });
+    let res = await api.addCollection(collection());
 
     if (!res.ok) {
       setAlert("error");
@@ -116,15 +109,16 @@ export default function Collections() {
                           {collection.name}
                         </a>
                         <br />
-                        <span>
-                          Created At:{" "}
-                          {new Date(collection.created_at).toLocaleString()}{" "}
-                        </span>
-                        <Show when={collection.archived_at > 0}>
-                          <br />
+                        <Show when={collection.deleted_at === 0}>
+                          <span>
+                            Created At:{" "}
+                            {new Date(collection.created_at).toLocaleString()}{" "}
+                          </span>
+                        </Show>
+                        <Show when={collection.deleted_at > 0}>
                           <span>
                             Archived At:{" "}
-                            {new Date(collection.archived_at).toLocaleString()}
+                            {new Date(collection.deleted_at).toLocaleString()}
                           </span>
                         </Show>
                       </Card.Body>

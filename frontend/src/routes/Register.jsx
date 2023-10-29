@@ -10,6 +10,7 @@ import {
   InputGroup,
 } from "solid-bootstrap";
 import Header from "../components/Header";
+import api from "../lib/api";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -32,10 +33,7 @@ export default function Register() {
     e.preventDefault();
 
     try {
-      let res = await fetch("https://localhost:8000/auth/register", {
-        method: "POST",
-        body: JSON.stringify(form()),
-      });
+      let res = await api.register(form());
 
       let json = await res.json();
 
@@ -51,14 +49,19 @@ export default function Register() {
     }
   };
 
-  let login = async (e) => {
+  let onLogin = async (e) => {
     e.preventDefault();
-    let res = await fetch("https://localhost:8000/auth/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email: form().email,
-        passCode: passCode(),
-      }),
+    // let res = await fetch("https://localhost:8000/auth/login", {
+    //   method: "POST",
+    //   body: JSON.stringify({
+    //     email: form().email,
+    //     passCode: passCode(),
+    //   }),
+    // });
+
+    let res = await api.login({
+      email: form().email,
+      passCode: passCode(),
     });
 
     if (res.ok) {
@@ -90,7 +93,7 @@ export default function Register() {
               <img class="ml-auto" src={qrCode()} />
             </div>
             <div class="d-flex justify-content-center mt-4">
-              <Form onSubmit={login}>
+              <Form onSubmit={onLogin}>
                 <Form.Group>
                   <InputGroup>
                     <Form.Control

@@ -1,14 +1,13 @@
 import { useNavigate } from "@solidjs/router";
 import { createEffect } from "solid-js";
+import api from "../lib/api";
 
 export default ({ children }) => {
   const navigate = useNavigate();
 
   createEffect(() => {
     let checkAuth = async () => {
-      let res = await fetch("https://localhost:8000/auth/validate", {
-        credentials: "include",
-      });
+      let res = await api.validate();
       if (res.ok) {
         navigate("/bookmarks");
       }

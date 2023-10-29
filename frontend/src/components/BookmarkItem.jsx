@@ -1,5 +1,5 @@
-import { Button, Card, Col, Offcanvas, Row } from "solid-bootstrap";
-import { createSignal, Show } from "solid-js";
+import { Button, Card } from "solid-bootstrap";
+import { Show } from "solid-js";
 
 export default function BookmarkItem({ index, item, deleteItem, select }) {
   if (mobileAndTabletCheck()) {

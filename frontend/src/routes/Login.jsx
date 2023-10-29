@@ -2,6 +2,7 @@ import { Alert, Button, Col, Container, Form, Row } from "solid-bootstrap";
 import Header from "../components/Header";
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
+import api from "../lib/api";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -20,10 +21,7 @@ export default function Home() {
     e.preventDefault();
 
     try {
-      let res = await fetch("https://localhost:8000/auth/login", {
-        method: "POST",
-        body: JSON.stringify(form()),
-      });
+      let res = await api.login(form());
 
       if (res.ok) {
         navigate("/");

@@ -27,8 +27,8 @@ func (api *CollectionAPI) Bind(scope pathrouter.IRoutes) {
 	scope.Get("/collections", api.GetCollections)
 	scope.Get("/collections/:collection", api.GetCollection)
 	scope.Post("/collections", api.AddCollection)
-	scope.Put("/collections/:collection", api.UpdateCollection)
-	scope.Delete("/collections/:collection", api.DeleteCollection)
+	scope.Put("/collections", api.UpdateCollection)
+	scope.Delete("/collections", api.DeleteCollection)
 }
 
 func (api *CollectionAPI) GetCollections(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
@@ -159,7 +159,6 @@ func (api *CollectionAPI) DeleteCollection(w http.ResponseWriter, r *http.Reques
 	defer r.Body.Close()
 
 	c := Collection{
-		Id:     ps.Get("collection"),
 		UserId: userId,
 	}
 
@@ -181,10 +180,8 @@ func (api *CollectionAPI) DeleteCollection(w http.ResponseWriter, r *http.Reques
 	}
 
 	if c.DeletedAt == 0 {
-		log.Println("archive collection")
 		err = archiveCollection(api.db, &c)
 	} else {
-		log.Println("delete collection")
 		err = deleteCollection(api.db, &c)
 	}
 
@@ -199,6 +196,7 @@ func (api *CollectionAPI) DeleteCollection(w http.ResponseWriter, r *http.Reques
 
 	utils.WriteJSON(w, http.StatusOK, utils.JSON{
 		"status": "ok",
+		"data":   c,
 	})
 }
 

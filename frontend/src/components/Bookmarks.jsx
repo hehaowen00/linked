@@ -1,9 +1,10 @@
 import { Alert, Button, Col, Form, Offcanvas, Row } from "solid-bootstrap";
-import { For, createEffect, createSignal, on } from "solid-js";
+import { For, Show, createEffect, createSignal, on } from "solid-js";
 import BookmarkItem from "./BookmarkItem";
 import { isValidURL } from "../lib/utils";
+import api from "../lib/api";
 
-export default ({ fetchItems, addItem }) => {
+export default ({ archived, fetchItems, addItem }) => {
   let [bookmarks, setBookmarks] = createSignal([]);
   let [form, setForm] = createSignal({
     title: "",
@@ -51,20 +52,13 @@ export default ({ fetchItems, addItem }) => {
     }
   };
 
-  let deleteItem = async (item) => {
-    let res = await fetch("https://localhost:8000/api/items", {
-      method: "DELETE",
-      credentials: "include",
-      body: JSON.stringify(item),
-    });
-    return res;
-  };
-
   let onDeleteItem = async (item) => {
-    let res = await deleteItem(item);
+    let res = await api.deleteItem(item);
     if (!res.ok) {
       return;
     }
+    setSelected({});
+    setShowSelected(false);
     await reloadItems();
   };
 
@@ -116,72 +110,78 @@ export default ({ fetchItems, addItem }) => {
   return (
     <>
       <Row class="reversed flexed">
-        <Col class="mt-2" md={4}>
-          <Form onSubmit={onAddItem}>
-            <Row>
-              <Col>
-                <Form.Control
-                  name="url"
-                  type="text"
-                  size="sm"
-                  placeholder="URL"
-                  required
-                  value={url()}
-                  onInput={(e) => setURL(e.target.value)}
-                />
-              </Col>
-            </Row>
-            <Row class="mt-1">
-              <Col>
-                <Form.Control
-                  name="title"
-                  type="text"
-                  size="sm"
-                  placeholder="Title"
-                  required
-                  value={form().title}
-                  onInput={updateForm}
-                />
-              </Col>
-            </Row>
-            <Row class="mt-2 mb-2">
-              <Col class="text-right spaced-left">
-                <Button size="sm" onClick={pasteUrl}>
-                  Paste URL
-                </Button>
-                <Button size="sm" type="submit">
-                  Add Bookmark
-                </Button>
-              </Col>
-            </Row>
-            <Row class="mt-2">
-              <Col>
-                <Alert
-                  variant="danger"
-                  dismissible
-                  show={showAlert() == "error"}
-                  onClose={() => setAlert("")}
-                >
-                  Unable to add bookmark
-                </Alert>
-                <Alert
-                  variant="success"
-                  dismissible
-                  show={showAlert() == "success"}
-                  onClose={() => setAlert("")}
-                >
-                  Bookmark added
-                </Alert>
-              </Col>
-            </Row>
-          </Form>
-        </Col>
+        <Show when={!archived()}>
+          <Col class="mt-2" md={4}>
+            <Form onSubmit={onAddItem}>
+              <Row>
+                <Col>
+                  <Form.Control
+                    name="url"
+                    type="text"
+                    size="sm"
+                    placeholder="URL"
+                    required
+                    value={url()}
+                    onInput={(e) => setURL(e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row class="mt-1">
+                <Col>
+                  <Form.Control
+                    name="title"
+                    type="text"
+                    size="sm"
+                    placeholder="Title"
+                    required
+                    value={form().title}
+                    onInput={updateForm}
+                  />
+                </Col>
+              </Row>
+              <Row class="mt-2 mb-2">
+                <Col class="text-right spaced-left">
+                  <Button size="sm" onClick={pasteUrl}>
+                    Paste URL
+                  </Button>
+                  <Button size="sm" type="submit">
+                    Add Bookmark
+                  </Button>
+                </Col>
+              </Row>
+              <Row class="mt-2">
+                <Col>
+                  <Alert
+                    variant="danger"
+                    dismissible
+                    show={showAlert() == "error"}
+                    onClose={() => setAlert("")}
+                  >
+                    Unable to add bookmark
+                  </Alert>
+                  <Alert
+                    variant="success"
+                    dismissible
+                    show={showAlert() == "success"}
+                    onClose={() => setAlert("")}
+                  >
+                    Bookmark added
+                  </Alert>
+                </Col>
+              </Row>
+            </Form>
+          </Col>
+        </Show>
         <Col>
           <Row class="mt-2 mb-4">
             <Col>
               <For
                 each={bookmarks()}
-                fallback={<h6 class="mt-4 text-center">No Bookmarks Found</h6>}
+                fallback={
+                  <Alert variant="dark" class="text-center">
+                    No Bookmarks Found
+                  </Alert>
+                }
               >
                 {(item, index) => (
                   <BookmarkItem
@@ -197,7 +197,6 @@ export default ({ fetchItems, addItem }) => {
         </Col>
       </Row>
       <Offcanvas
-        class="expanded-offcanvas"
         placement="bottom"
         show={showSelected()}
         onHide={() => setShowSelected(!showSelected())}
