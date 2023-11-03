@@ -2,6 +2,7 @@ package items
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"time"
 
@@ -167,8 +168,21 @@ WHERE user_id = ? AND item_id = ? AND collection_id = ?;
 
 func deleteItemMapping(db *sql.DB, item *Item) error {
 	item.DeletedAt = time.Now().UTC().UnixMilli()
-	_, err := db.Exec(deleteItemMappingSql, item.UserId, item.ID, item.CollectionId)
-	return err
+	res, err := db.Exec(deleteItemMappingSql, item.UserId, item.ID, item.CollectionId)
+	if err != nil {
+		return err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return errors.New("item mapping not found")
+	}
+
+	return nil
 }
 
 const deleteItemSql = `

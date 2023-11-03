@@ -1,4 +1,5 @@
-const API_HOST = window.location.origin;
+// const API_HOST = window.location.origin;
+const API_HOST = import.meta.env.VITE_API_HOST;
 
 const validate = async () => {
   let res = await fetch(`${API_HOST}/auth/validate`, {
@@ -36,6 +37,14 @@ const register = async (body) => {
 
 const getItems = async () => {
   let res = await fetch(`${API_HOST}/api/items`, {
+    credentials: "include",
+  });
+
+  return res;
+};
+
+const getItem = async (id) => {
+  let res = await fetch(`${API_HOST}/api/items/${id}`, {
     credentials: "include",
   });
 
@@ -116,6 +125,18 @@ const deleteCollection = async (collection) => {
   return res;
 };
 
+const getPageInfo = async (url) => {
+  let res = await fetch(`${API_HOST}/api/opengraph/info`, {
+    credentials: "include",
+    method: "POST",
+    body: JSON.stringify({
+      url,
+    }),
+  });
+
+  return res;
+};
+
 export default {
   validate,
   login,
@@ -123,6 +144,7 @@ export default {
   register,
 
   getItems,
+  getItem,
   addItem,
   deleteItem,
 
@@ -132,4 +154,6 @@ export default {
   addCollection,
   updateCollection,
   deleteCollection,
+
+  getPageInfo,
 };

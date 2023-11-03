@@ -1,6 +1,3 @@
-import { Show, createSignal } from "solid-js";
-import { useNavigate } from "@solidjs/router";
-
 import {
   Alert,
   Button,
@@ -10,6 +7,9 @@ import {
   InputGroup,
 } from "solid-bootstrap";
 import Header from "../components/Header";
+
+import { Show, createSignal } from "solid-js";
+import { useNavigate } from "@solidjs/router";
 import api from "../lib/api";
 
 export default function Register() {
@@ -51,13 +51,6 @@ export default function Register() {
 
   let onLogin = async (e) => {
     e.preventDefault();
-    // let res = await fetch("https://localhost:8000/auth/login", {
-    //   method: "POST",
-    //   body: JSON.stringify({
-    //     email: form().email,
-    //     passCode: passCode(),
-    //   }),
-    // });
 
     let res = await api.login({
       email: form().email,

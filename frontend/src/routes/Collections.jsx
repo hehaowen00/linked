@@ -8,6 +8,7 @@ import {
   Card,
 } from "solid-bootstrap";
 import Header from "../components/Header";
+
 import { createEffect, createSignal, For } from "solid-js";
 import api from "../lib/api";
 
@@ -51,84 +52,80 @@ export default function Collections() {
   return (
     <>
       <Header authenticated={true} />
-      <Container class="mt-2 content">
-        <Row class="reversed flexed">
-          <Col class="mt-2" md={4}>
-            <Form onSubmit={addCollection}>
-              <Row>
-                <Col>
-                  <Form.Control
-                    name="name"
-                    type="text"
-                    size="sm"
-                    placeholder="New Collection"
-                    required
-                    onInput={updateCollection}
-                    value={collection().name}
-                  />
-                </Col>
-              </Row>
-              <Row class="mt-1">
-                <Col class="text-right">
-                  <Button size="sm" type="submit">
-                    Add Collection
-                  </Button>
-                </Col>
-              </Row>
-              <Row class="mt-2">
-                <Col>
-                  <Show when={showAlert() === "error"}>
-                    <Alert
-                      variant="danger"
-                      dismissible
-                      onClose={() => setAlert("")}
-                    >
-                      Unable to create collection
-                    </Alert>
-                  </Show>
-                  <Show
-                    when={showAlert() === "success"}
+      <Container class="mt-2 content no-overflow">
+        <Col class="mt-2" md={4}>
+          <Form onSubmit={addCollection}>
+            <Row>
+              <Col>
+                <Form.Control
+                  name="name"
+                  type="text"
+                  size="sm"
+                  placeholder="New Collection"
+                  required
+                  onInput={updateCollection}
+                  value={collection().name}
+                />
+              </Col>
+            </Row>
+            <Row class="mt-1">
+              <Col class="text-right">
+                <Button size="sm" type="submit">
+                  Add Collection
+                </Button>
+              </Col>
+            </Row>
+            <Row class="mt-2">
+              <Col>
+                <Show when={showAlert() === "error"}>
+                  <Alert
+                    variant="danger"
+                    dismissible
                     onClose={() => setAlert("")}
                   >
-                    <Alert variant="success" dismissible>
-                      Collection added
-                    </Alert>
-                  </Show>
-                </Col>
-              </Row>
-            </Form>
-          </Col>
-          <Col>
-            <Row class="mt-2 mb-4">
-              <For each={collections()}>
-                {(collection, index) => (
-                  <div class="bookmark-item">
-                    <Card>
-                      <Card.Body>
-                        <a href={`/collections/${collection.id}`}>
-                          {collection.name}
-                        </a>
-                        <br />
-                        <Show when={collection.deleted_at === 0}>
-                          <span>
-                            Created At:{" "}
-                            {new Date(collection.created_at).toLocaleString()}{" "}
-                          </span>
-                        </Show>
-                        <Show when={collection.deleted_at > 0}>
-                          <span>
-                            Archived At:{" "}
-                            {new Date(collection.deleted_at).toLocaleString()}
-                          </span>
-                        </Show>
-                      </Card.Body>
-                    </Card>
-                  </div>
-                )}
-              </For>
+                    Unable to create collection
+                  </Alert>
+                </Show>
+                <Show
+                  when={showAlert() === "success"}
+                  onClose={() => setAlert("")}
+                >
+                  <Alert variant="success" dismissible>
+                    Collection added
+                  </Alert>
+                </Show>
+              </Col>
             </Row>
-          </Col>
-        </Row>
+          </Form>
+        </Col>
+        <Col class="scrollable no-scrollbar mt-1">
+          <For each={collections()}>
+            {(collection, index) => (
+              <div class="bookmark-item">
+                <Card>
+                  <Card.Body>
+                    <a href={`/collections/${collection.id}`}>
+                      {collection.name}
+                    </a>
+                    <br />
+                    <Show when={!collection.archived}>
+                      <span class="text-sm">
+                        Created At:{" "}
+                        {new Date(collection.created_at).toLocaleString()}{" "}
+                      </span>
+                    </Show>
+                    <Show when={collection.archived}>
+                      <span class="text-sm">
+                        Archived At:{" "}
+                        {new Date(collection.deleted_at).toLocaleString()}
+                      </span>
+                    </Show>
+                  </Card.Body>
+                </Card>
+              </div>
+            )}
+          </For>
+        </Col>
       </Container>
     </>
   );

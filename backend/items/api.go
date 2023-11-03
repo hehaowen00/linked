@@ -147,6 +147,47 @@ func (api *ItemsAPI) GetItems(w http.ResponseWriter, r *http.Request, ps *pathro
 	utils.WriteJSON(w, http.StatusOK, items)
 }
 
+func (api *ItemsAPI) GetItem(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	userId := r.Context().Value(constants.AuthKey).(string)
+
+	item := Item{
+		ID:     ps.Get("item"),
+		UserId: userId,
+	}
+
+	err := utils.ReadJSON(r.Body, &item)
+	if err != nil {
+		log.Println("unable to read json", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.JSON{
+			"status": "error",
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	err = item.Validate()
+	if err != nil {
+		log.Println("item validation error", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.JSON{
+			"status": "error",
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	err = getItem(api.db, &item)
+	if err != nil {
+		log.Println("error getting item error", err)
+		utils.WriteJSON(w, http.StatusBadRequest, utils.JSON{
+			"status": "error",
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, item)
+}
+
 func (api *ItemsAPI) AddItem(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 	userId := r.Context().Value(constants.AuthKey).(string)
 	defer r.Body.Close()
