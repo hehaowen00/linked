@@ -166,6 +166,10 @@ p {
   font-size: 0.75rem;
 }
 
+.mr-1 {
+  margin-right: 0.25rem;
+}
+
 @media screen and (max-width: 500px) {
   .view-btn {
     flex-grow: 2 !important;
@@ -181,6 +185,10 @@ p {
 
   .scrollable {
     margin-right: 0rem;
+  }
+
+  .button-side {
+    margin-top: 0.5rem;
   }
 }
 

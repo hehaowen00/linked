@@ -13,7 +13,8 @@ export default () => {
   let [collection, setCollection] = createSignal({
     name: "",
     created_at: 0,
-    deleted_at: 0,
+    archived: false,
+    archived_at: 0,
   });
   let [loaded, setLoaded] = createSignal(false);
 
@@ -48,9 +49,15 @@ export default () => {
       <Header authenticated={true} />
       <Show when={loaded()}>
         <Container>
-          <Row class="mt-2">
+          <Row>
             <Col>
-              <Button size="sm" variant="light">
+              <Button
+                size="sm"
+                variant="light"
+                onClick={() =>
+                  navigate(`/collections/${params.collection}/edit`)
+                }
+              >
                 {collection().name}
               </Button>
             </Col>
@@ -58,7 +65,7 @@ export default () => {
         </Container>
         <Container class="mt-1 content overflow">
           <Bookmarks
-            archived={() => collection().deleted_at > 0}
+            archived={() => collection().archived}
             fetchItems={fetchItems}
             addItem={addItem}
           />

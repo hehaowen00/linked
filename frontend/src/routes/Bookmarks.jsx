@@ -8,7 +8,7 @@ export default () => {
   return (
     <>
       <Header authenticated={true} />
-      <Container class="mt-2 content no-overflow">
+      <Container class="content no-overflow">
         <Bookmarks
           archived={() => false}
           fetchItems={api.getItems}

@@ -50,11 +50,13 @@ export default ({ archived, fetchItems, addItem }) => {
   };
 
   let pasteUrl = async () => {
-    let text = await navigator.clipboard.readText();
-    if (isValidURL(text)) {
-      setForm({ ...form(), url: text });
-      setURL(text);
-    }
+    try {
+      let text = await navigator.clipboard.readText();
+      if (isValidURL(text)) {
+        setForm({ ...form(), url: text });
+        setURL(text);
+      }
+    } catch (e) {}
   };
 
   let onDeleteItem = async (item) => {

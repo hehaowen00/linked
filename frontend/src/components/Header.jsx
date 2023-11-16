@@ -4,13 +4,7 @@ import { Show } from "solid-js";
 
 export default function Header({ authenticated }) {
   return (
-    <Navbar
-      bg="dark"
-      data-bs-theme="dark"
-      expand="lg"
-      collapseOnSelect
-      sticky="top"
-    >
+    <Navbar expand="lg" collapseOnSelect sticky="top">
       <Container>
         <Navbar.Brand href="/">Linked</Navbar.Brand>
         <Navbar.Toggle />

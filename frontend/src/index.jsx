@@ -16,6 +16,7 @@ import AuthGuard from "./components/AuthGuard";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./index.css";
+import EditCollection from "./routes/EditCollection";
 
 window.mobileAndTabletCheck = function () {
   let check = false;
@@ -83,6 +84,10 @@ render(
         <Route
           path="/collections/:collection"
           component={() => <Collection />}
+        />
+        <Route
+          path="/collections/:collection/edit"
+          component={() => <EditCollection />}
         />
       </Routes>
     </Router>

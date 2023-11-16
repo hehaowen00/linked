@@ -52,7 +52,7 @@ export default function Collections() {
   return (
     <>
       <Header authenticated={true} />
-      <Container class="mt-2 content no-overflow">
+      <Container class="content no-overflow">
         <Col class="mt-1" md={4}>
           <Form onSubmit={addCollection}>
             <Row>
