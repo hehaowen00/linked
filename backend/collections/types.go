@@ -6,11 +6,12 @@ import (
 )
 
 type Collection struct {
-	Id        string `json:"id"`
-	UserId    string `json:"-"`
-	Name      string `json:"name"`
-	CreatedAt int64  `json:"created_at"`
-	DeletedAt int64  `json:"deleted_at"`
+	Id         string `json:"id"`
+	UserId     string `json:"-"`
+	Name       string `json:"name"`
+	CreatedAt  int64  `json:"created_at"`
+	Archived   bool   `json:"archived"`
+	ArchivedAt int64  `json:"archived_at"`
 }
 
 func (c *Collection) isValid() error {

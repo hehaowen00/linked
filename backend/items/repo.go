@@ -45,7 +45,7 @@ func getItemsByCollection(db *sql.DB, collectionId, userId string) ([]*Item, err
 }
 
 const getItemsSql = `
-SELECT id, title, url, description, created_at, deleted_at
+SELECT id, title, url, description, created_at
 FROM items
 WHERE items.id NOT IN
 	(SELECT item_id FROM item_collection_map WHERE user_id = ?)
@@ -62,7 +62,7 @@ func getItems(db *sql.DB, userId string) ([]*Item, error) {
 
 	for rows.Next() {
 		item := Item{}
-		err := rows.Scan(&item.ID, &item.Title, &item.URL, &item.Description, &item.CreatedAt, &item.DeletedAt)
+		err := rows.Scan(&item.ID, &item.Title, &item.URL, &item.Description, &item.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -167,7 +167,6 @@ WHERE user_id = ? AND item_id = ? AND collection_id = ?;
 `
 
 func deleteItemMapping(db *sql.DB, item *Item) error {
-	item.DeletedAt = time.Now().UTC().UnixMilli()
 	res, err := db.Exec(deleteItemMappingSql, item.UserId, item.ID, item.CollectionId)
 	if err != nil {
 		return err

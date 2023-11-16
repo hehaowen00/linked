@@ -18,6 +18,7 @@ export default ({ archived, fetchItems, addItem }) => {
 
   let [showAlert, setAlert] = createSignal("");
   let [showSelected, setShowSelected] = createSignal(false);
+  let [loading, setLoading] = createSignal(false);
 
   let updateForm = (e) => {
     setForm({ ...form(), [e.target.name]: e.target.value });
@@ -71,28 +72,29 @@ export default ({ archived, fetchItems, addItem }) => {
     setShowSelected(true);
   };
 
-  let clear = () => {
-    setForm({
-      title: "",
-    });
-    setURL("");
-  };
-
   createEffect(
     on(url, (u) => {
       let fetchInfo = async () => {
         if (!u) {
           return;
         }
-        let res = await api.getPageInfo(u);
-        if (!res.ok) {
-          return;
-        }
-        let json = await res.json();
+        setLoading(true);
         setForm({
-          title: json.title,
-          desc: "",
+          title: "",
         });
+        try {
+          let res = await api.getPageInfo(u);
+          if (!res.ok) {
+            setLoading(false);
+            return;
+          }
+          let json = await res.json();
+          setForm({
+            title: json.title,
+            desc: "",
+          });
+        } catch (e) {}
+        setLoading(false);
       };
       fetchInfo();
     }),
@@ -127,6 +129,7 @@ export default ({ archived, fetchItems, addItem }) => {
                   required
                   value={url()}
                   onInput={(e) => setURL(e.target.value)}
+                  disabled={loading()}
                 />
               </Col>
             </Row>
@@ -136,17 +139,31 @@ export default ({ archived, fetchItems, addItem }) => {
                   name="title"
                   type="text"
                   size="sm"
-                  placeholder="Title"
+                  placeholder={loading() ? "Loading..." : "Title"}
                   required
                   value={form().title}
                   onInput={updateForm}
+                  disabled={loading()}
                 />
               </Col>
             </Row>
             <Row class="mt-1 mb-2">
               <Col class="text-right spaced-left">
                 <Button size="sm" onClick={pasteUrl}>
-                  Paste URL
+                  <svg
+                    fill="currentColor"
+                    stroke-width="0"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    style="overflow: visible; color: currentcolor; margin-top: -4px;"
+                    height="1em"
+                    width="1em"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z"
+                    ></path>
+                  </svg>
                 </Button>
                 <Button size="sm" type="submit">
                   Add Bookmark

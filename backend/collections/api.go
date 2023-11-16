@@ -179,7 +179,7 @@ func (api *CollectionAPI) DeleteCollection(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if c.DeletedAt == 0 {
+	if !c.Archived {
 		err = archiveCollection(api.db, &c)
 	} else {
 		err = deleteCollection(api.db, &c)

@@ -10,7 +10,6 @@ type Item struct {
 	Title        string `json:"title"`
 	Description  string `json:"desc"`
 	CreatedAt    int64  `json:"created_at"`
-	DeletedAt    int64  `json:"deleted"`
 }
 
 func (i *Item) Validate() error {

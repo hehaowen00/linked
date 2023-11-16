@@ -53,7 +53,7 @@ export default function Collections() {
     <>
       <Header authenticated={true} />
       <Container class="mt-2 content no-overflow">
-        <Col class="mt-2" md={4}>
+        <Col class="mt-1" md={4}>
           <Form onSubmit={addCollection}>
             <Row>
               <Col>
@@ -117,7 +117,7 @@ export default function Collections() {
                     <Show when={collection.archived}>
                       <span class="text-sm">
                         Archived At:{" "}
-                        {new Date(collection.deleted_at).toLocaleString()}
+                        {new Date(collection.archived_at).toLocaleString()}
                       </span>
                     </Show>
                   </Card.Body>

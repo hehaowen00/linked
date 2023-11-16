@@ -10,7 +10,7 @@ type CollectionsRepo struct {
 }
 
 const getCollectionsSql = `
-SELECT id, name, created_at, deleted_at
+SELECT id, name, created_at, archived, archived_at
 FROM collections
 WHERE user_id = ?
 ORDER BY name ASC;
@@ -29,7 +29,7 @@ func getCollections(db *sql.DB, userId string) ([]*Collection, error) {
 			UserId: userId,
 		}
 
-		err := rows.Scan(&c.Id, &c.Name, &c.CreatedAt, &c.DeletedAt)
+		err := rows.Scan(&c.Id, &c.Name, &c.CreatedAt, &c.Archived, &c.ArchivedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -41,14 +41,14 @@ func getCollections(db *sql.DB, userId string) ([]*Collection, error) {
 }
 
 const getCollectionSql = `
-SELECT name, created_at, deleted_at
+SELECT name, created_at, archived, archived_at
 FROM collections
 WHERE id = ? AND user_id = ?;
 `
 
 func getCollection(db *sql.DB, c *Collection) error {
 	row := db.QueryRow(getCollectionSql, c.Id, c.UserId)
-	err := row.Scan(&c.Name, &c.CreatedAt, &c.DeletedAt)
+	err := row.Scan(&c.Name, &c.CreatedAt, &c.Archived, &c.ArchivedAt)
 	return err
 }
 
@@ -65,30 +65,31 @@ func createCollection(db *sql.DB, c *Collection) error {
 
 const updateCollectionSql = `
 UPDATE collections
-SET name = ?, deleted_at = ?
+SET name = ?, archived = ?, archived_at = ?
 WHERE id = ? and user_id = ?;
 `
 
 func updateCollection(db *sql.DB, c *Collection) error {
-	_, err := db.Exec(updateCollectionSql, c.Name, c.DeletedAt, c.Id, c.UserId)
+	_, err := db.Exec(updateCollectionSql, c.Name, c.Archived, c.ArchivedAt, c.Id, c.UserId)
 	return err
 }
 
 const archiveCollectionSql = `
 UPDATE collections
-SET deleted_at = ?
+SET archived = 1, archived_at = ?
 WHERE id = ? and user_id = ? and name = ? and deleted_at = 0;
 `
 
 func archiveCollection(db *sql.DB, c *Collection) error {
-	c.DeletedAt = time.Now().UTC().UnixMilli()
-	_, err := db.Exec(archiveCollectionSql, c.DeletedAt, c.Id, c.UserId, c.Name)
+	c.Archived = true
+	c.ArchivedAt = time.Now().UTC().UnixMilli()
+	_, err := db.Exec(archiveCollectionSql, c.ArchivedAt, c.Id, c.UserId, c.Name)
 	return err
 }
 
 const deleteCollectionSql = `
 DELETE FROM collections
-WHERE id = ? and user_id = ? and name = ? and deleted_at = ?;
+WHERE id = ? and user_id = ? and name = ? and archived_at = ?;
 `
 
 const deleteItemsFromCollectionSql = `
@@ -108,7 +109,7 @@ func deleteCollection(db *sql.DB, c *Collection) error {
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Exec(deleteCollectionSql, c.Id, c.UserId, c.Name, c.DeletedAt)
+	_, err = tx.Exec(deleteCollectionSql, c.Id, c.UserId, c.Name, c.ArchivedAt)
 	if err != nil {
 		return err
 	}
