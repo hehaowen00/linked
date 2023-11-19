@@ -28,6 +28,7 @@ func (api *CollectionAPI) Bind(scope pathrouter.IRoutes) {
 	scope.Get("/collections/:collection", api.GetCollection)
 	scope.Post("/collections", api.AddCollection)
 	scope.Put("/collections", api.UpdateCollection)
+	scope.Post("/collections/:collection/archive", api.ArchiveCollection)
 	scope.Delete("/collections", api.DeleteCollection)
 }
 
@@ -61,7 +62,7 @@ func (api *CollectionAPI) GetCollection(w http.ResponseWriter, r *http.Request, 
 	err := getCollection(api.db, &c)
 	if err != nil {
 		log.Println(err)
-		utils.WriteJSON(w, http.StatusOK, utils.JSON{
+		utils.WriteJSON(w, http.StatusNotFound, utils.JSON{
 			"status": "error",
 			"error":  "unable to fetch collection",
 		})
@@ -154,9 +155,8 @@ func (api *CollectionAPI) UpdateCollection(w http.ResponseWriter, r *http.Reques
 	})
 }
 
-func (api *CollectionAPI) DeleteCollection(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+func (api *CollectionAPI) ArchiveCollection(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 	userId := r.Context().Value(constants.AuthKey).(string)
-	defer r.Body.Close()
 
 	c := Collection{
 		UserId: userId,
@@ -182,7 +182,7 @@ func (api *CollectionAPI) DeleteCollection(w http.ResponseWriter, r *http.Reques
 	if !c.Archived {
 		err = archiveCollection(api.db, &c)
 	} else {
-		err = deleteCollection(api.db, &c)
+		err = unarchiveCollection(api.db, &c)
 	}
 
 	if err != nil {
@@ -196,15 +196,45 @@ func (api *CollectionAPI) DeleteCollection(w http.ResponseWriter, r *http.Reques
 
 	utils.WriteJSON(w, http.StatusOK, utils.JSON{
 		"status": "ok",
-		"data":   c,
 	})
 }
 
-func (api *CollectionAPI) CreateDefaultCollection(userId string) error {
-	err := createCollection(api.db, &Collection{
-		Id:     "Unsorted",
+func (api *CollectionAPI) DeleteCollection(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	userId := r.Context().Value(constants.AuthKey).(string)
+
+	c := Collection{
 		UserId: userId,
-		Name:   "Unsorted",
+	}
+
+	err := utils.ReadJSON(r.Body, &c)
+	if err != nil {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.JSON{
+			"status": "error",
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	if err := c.isValid(); err != nil {
+		utils.WriteJSON(w, http.StatusBadRequest, utils.JSON{
+			"status": "error",
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	err = deleteCollection(api.db, &c)
+	if err != nil {
+		log.Println(err)
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.JSON{
+			"status": "error",
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, utils.JSON{
+		"status": "ok",
+		"data":   c,
 	})
-	return err
 }

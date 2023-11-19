@@ -89,9 +89,6 @@ func (api *AuthAPI) Register(w http.ResponseWriter, r *http.Request, ps *pathrou
 		})
 		return
 	}
-	err = api.collectionApi.CreateDefaultCollection(userId)
-	if err != nil {
-	}
 
 	utils.WriteJSON(w, http.StatusOK, utils.JSON{
 		"status":  "ok",

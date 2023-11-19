@@ -115,6 +115,19 @@ const updateCollection = async (collection) => {
   return res;
 };
 
+const archiveCollection = async (collection) => {
+  let res = await fetch(
+    `${API_HOST}/api/collections/${collection.id}/archive`,
+    {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify(collection),
+    },
+  );
+
+  return res;
+};
+
 const deleteCollection = async (collection) => {
   let res = await fetch(`${API_HOST}/api/collections`, {
     credentials: "include",
@@ -153,6 +166,7 @@ export default {
   getCollectionItems,
   addCollection,
   updateCollection,
+  archiveCollection,
   deleteCollection,
 
   getPageInfo,

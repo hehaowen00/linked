@@ -77,7 +77,7 @@ func updateCollection(db *sql.DB, c *Collection) error {
 const archiveCollectionSql = `
 UPDATE collections
 SET archived = 1, archived_at = ?
-WHERE id = ? and user_id = ? and name = ? and deleted_at = 0;
+WHERE id = ? and user_id = ? and name = ?;
 `
 
 func archiveCollection(db *sql.DB, c *Collection) error {
@@ -87,19 +87,32 @@ func archiveCollection(db *sql.DB, c *Collection) error {
 	return err
 }
 
+const unarchiveCollectionSql = `
+UPDATE collections
+SET archived = 0, archived_at = 0
+WHERE id = ? and user_id = ? and name = ?;
+`
+
+func unarchiveCollection(db *sql.DB, c *Collection) error {
+	c.Archived = false
+	c.ArchivedAt = 0
+	_, err := db.Exec(unarchiveCollectionSql, c.Id, c.UserId, c.Name)
+	return err
+}
+
 const deleteCollectionSql = `
 DELETE FROM collections
-WHERE id = ? and user_id = ? and name = ? and archived_at = ?;
+WHERE id = ? and user_id = ? and name = ? and archived = 1 and archived_at = ?;
 `
 
-const deleteItemsFromCollectionSql = `
+const deleteCollectionItemsSql = `
+DELETE FROM items
+WHERE items.id IN (SELECT item_id FROM item_collection_map where collection_id = ?);
+`
+
+const deleteItemMappings = `
 DELETE FROM item_collection_map
 WHERE collection_id = ?;
-`
-
-const deleteOrphanedItemsSql = `
-DELETE FROM items
-WHERE items.id NOT IN (SELECT item_id FROM item_collection_map);
 `
 
 func deleteCollection(db *sql.DB, c *Collection) error {
@@ -114,12 +127,12 @@ func deleteCollection(db *sql.DB, c *Collection) error {
 		return err
 	}
 
-	_, err = tx.Exec(deleteItemsFromCollectionSql, c.Id)
+	_, err = tx.Exec(deleteCollectionItemsSql, c.Id)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec(deleteOrphanedItemsSql)
+	_, err = tx.Exec(deleteItemMappings, c.Id)
 	if err != nil {
 		return err
 	}

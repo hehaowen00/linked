@@ -64,6 +64,7 @@ export default ({ archived, fetchItems, addItem }) => {
     if (!res.ok) {
       return;
     }
+
     setSelected({});
     setShowSelected(false);
     await reloadItems();

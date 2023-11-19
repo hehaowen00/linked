@@ -192,6 +192,10 @@ p {
   }
 }
 
+.inactive {
+  pointer-events: none;
+}
+
 @media screen and (min-width: 400px) {
   .view-btn {
     flex-grow: 0 !important;
