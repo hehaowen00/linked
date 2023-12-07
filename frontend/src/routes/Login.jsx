@@ -38,49 +38,45 @@ export default function Home() {
     <>
       <Header />
       <Container>
-        <Row>
-          <Col md={4} class="mx-auto">
-            <div class="text-center">
-              <h1 class="mt-4 mx-auto">Login</h1>
+        <Col md={4} class="mx-auto">
+          <h1 class="mt-4 text-center">Login</h1>
+          <Show when={showError()}>
+            <Alert variant="danger">Unable to authenticate</Alert>
+          </Show>
+          <Form onSubmit={submit}>
+            <Form.Group class="mb-3">
+              <Form.Label>Email Address</Form.Label>
+              <Form.Control
+                name="email"
+                type="email"
+                placeholder="Email Address"
+                required
+                value={form().email}
+                onInput={updateForm}
+              />
+            </Form.Group>
+            <Form.Group class="mb-3">
+              <Form.Label>Pass Code</Form.Label>
+              <Form.Control
+                name="passCode"
+                type="text"
+                placeholder="Pass Code"
+                maxLength={6}
+                required
+                value={form().passCode}
+                onInput={updateForm}
+              />
+            </Form.Group>
+            <a class="mt-1 mb-1" href="/register">
+              <p>Don't have an account?</p>
+            </a>
+            <div class="w-full text-right">
+              <Button variant="primary" type="submit" value="submit">
+                Login
+              </Button>
             </div>
-            <Show when={showError()}>
-              <Alert variant="danger">Unable to authenticate</Alert>
-            </Show>
-            <Form onSubmit={submit}>
-              <Form.Group class="mb-3">
-                <Form.Label>Email Address</Form.Label>
-                <Form.Control
-                  name="email"
-                  type="email"
-                  placeholder="Email Address"
-                  required
-                  value={form().email}
-                  onInput={updateForm}
-                />
-              </Form.Group>
-              <Form.Group class="mb-3">
-                <Form.Label>Pass Code</Form.Label>
-                <Form.Control
-                  name="passCode"
-                  type="text"
-                  placeholder="Pass Code"
-                  maxLength={6}
-                  required
-                  value={form().passCode}
-                  onInput={updateForm}
-                />
-              </Form.Group>
-              <a class="mt-1 mb-1" href="/register">
-                <p>Don't have an account?</p>
-              </a>
-              <div class="w-full text-right">
-                <Button variant="primary" type="submit" value="submit">
-                  Login
-                </Button>
-              </div>
-            </Form>
-          </Col>
-        </Row>
+          </Form>
+        </Col>
       </Container>
     </>
   );

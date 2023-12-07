@@ -66,7 +66,7 @@ export default function Register() {
     <>
       <Header />
       <Container>
-        <Col md={4} class="m-auto">
+        <Col md={4} class="mx-auto">
           <h1 class="mt-4 text-center">Register</h1>
           <Show when={registered()}>
             <Alert variant="success">
