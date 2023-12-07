@@ -41,6 +41,7 @@ func (api *AuthAPI) SetCollectionsApi(collectionApi *collections.CollectionAPI) 
 func (api *AuthAPI) Bind(scope pathrouter.IRoutes) {
 	scope.Post("/register", api.Register)
 	scope.Post("/login", api.Login)
+	scope.Get("/logout", api.Logout)
 	scope.Get("/validate", api.Validate)
 }
 
@@ -121,14 +122,18 @@ func (api *AuthAPI) Login(w http.ResponseWriter, r *http.Request, ps *pathrouter
 
 	valid := totp.Validate(req.PassCode, user.secret)
 	if !valid {
-		utils.WriteJSON(w, http.StatusUnauthorized, utils.JSON{
-			"status": "error",
-			"error":  "invalid user details",
-		})
-		return
+		valid, err = totp.ValidateCustom(req.PassCode, user.secret, time.Now().Add(-30*time.Second), totp.ValidateOpts{})
+		if !valid || err != nil {
+			log.Println(err)
+			utils.WriteJSON(w, http.StatusInternalServerError, utils.JSON{
+				"status": "error",
+				"error":  "invalid user details",
+			})
+			return
+		}
 	}
 
-	expiresAt := time.Now().Add(24 * time.Hour)
+	expiresAt := time.Now().Add(7 * 24 * time.Hour)
 	claims := authClaims{
 		jwt.RegisteredClaims{
 			Subject:   user.id,
@@ -163,6 +168,31 @@ func (api *AuthAPI) Login(w http.ResponseWriter, r *http.Request, ps *pathrouter
 	})
 }
 
+func (api *AuthAPI) Logout(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
+	_, err := r.Cookie("access_token")
+	if err != nil {
+		utils.WriteJSON(w, http.StatusUnauthorized, utils.JSON{
+			"status": "error",
+			"error":  "unauthorized",
+		})
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+		Path:     "/",
+		Expires:  time.Now().Add(-1 * time.Hour),
+		Secure:   true,
+	})
+
+	utils.WriteJSON(w, http.StatusOK, utils.JSON{
+		"status": "ok",
+	})
+}
+
 func (api *AuthAPI) Validate(w http.ResponseWriter, r *http.Request, ps *pathrouter.Params) {
 	accessToken, err := r.Cookie("access_token")
 	if err != nil {
@@ -185,13 +215,13 @@ func (api *AuthAPI) Validate(w http.ResponseWriter, r *http.Request, ps *pathrou
 		return
 	}
 
-	claims, ok := token.Claims.(*authClaims)
+	_, ok := token.Claims.(*authClaims)
 	if !token.Valid || !ok {
 		return
 	}
 
-	ctx := context.WithValue(r.Context(), constants.AuthKey, claims.Subject)
-	r = r.WithContext(ctx)
+	// ctx := context.WithValue(r.Context(), constants.AuthKey, claims.Subject)
+	// r = r.WithContext(ctx)
 
 	utils.WriteJSON(w, http.StatusOK, utils.JSON{
 		"status": "ok",

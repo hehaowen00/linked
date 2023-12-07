@@ -53,14 +53,17 @@ func main() {
 	}
 
 	router := pathrouter.NewRouter()
-	router.Use(pathrouter.GzipMiddleware)
 
-	var cors pathrouter.CorsHandler
-	cors.AllowCredentials = true
+	cors := pathrouter.CorsHandler{
+		AllowCredentials: true,
+	}
+
 	router.Use(cors.Middleware)
+	router.Use(pathrouter.GzipMiddleware)
 
 	router.Get("/app", serveIndexHtml(cfg.StaticDir))
 	router.Get("/app/*", serveIndexHtml(cfg.StaticDir))
+	router.Get("/", serveIndexHtml(cfg.StaticDir))
 	router.Get("/*", createSPAHandler(cfg.StaticDir))
 
 	authScope := router.Scope("/auth")
